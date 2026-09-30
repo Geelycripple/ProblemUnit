@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
 
-  <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
+  <!-- Library Quagga2 -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <style>
@@ -107,7 +107,7 @@
       transition: all 0.2s ease-in-out;
     }
 
-    /* Style untuk status READONLY (Abu-abu ter-lock) */
+    /* Style Readonly khusus agar tampil abu-abu */
     input[readonly] {
       background-color: var(--input-readonly) !important;
       color: #475569 !important;
@@ -257,8 +257,8 @@
   <div class="form-group">
     <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
     <div class="btn-grid">
-      <button type="button" class="btn btn-green" onclick="toggleScanner()">📷 Live Scan</button>
-      <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Foto Barcode</button>
+      <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan</button>
+      <button type="button" class="btn btn-purple" id="btnUploadFoto">📁 Foto Barcode</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
@@ -270,13 +270,13 @@
     <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
   </div>
 
-  <!-- Car Model (Readonly Abu-abu) -->
+  <!-- Car Model -->
   <div class="form-group">
     <label>Car Model <span class="cn">车型</span></label>
     <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
   </div>
 
-  <!-- Colour (Readonly Abu-abu) -->
+  <!-- Colour -->
   <div class="form-group">
     <label>Colour <span class="cn">颜色</span></label>
     <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
@@ -311,22 +311,34 @@
     <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
   </div>
 
-  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Submit Data 提交</button>
+  <button type="button" class="btn btn-submit" id="submitBtn">Submit Data 提交</button>
 </div>
 
 <script>
-  // PASTAISKAN URL APPS SCRIPT ANDA SUDAH BENAR DI SINI (Termasuk /exec di ujungnya)
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec
-    "; 
+  // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec"; 
   let isScanning = false;
 
-  window.addEventListener('DOMContentLoaded', () => {
+  // Inisialisasi Tanggal dan Event Listener saat halaman terbuka
+  document.addEventListener("DOMContentLoaded", function() {
+    updateDateTime();
+    
+    // Bind tombol agar aman di iOS/Safari
+    document.getElementById("btnLiveScan").addEventListener("click", toggleScanner);
+    document.getElementById("btnUploadFoto").addEventListener("click", function() {
+      document.getElementById("file-input").click();
+    });
+    document.getElementById("submitBtn").addEventListener("click", submitForm);
+    document.getElementById("file-input").addEventListener("change", handleFileUpload);
+  });
+
+  function updateDateTime() {
     const now = new Date();
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-  });
+  }
 
-  // Fungsi Auto Lookup ke Google Sheet (Diperbaiki dengan redirect & fallback)
+  // Auto Lookup ke Master Data Google Sheets
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -335,59 +347,51 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    const targetUrl = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`;
+    if (!SCRIPT_URL || SCRIPT_URL.includes("URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA")) {
+      alert("URL Web App Google Apps Script belum dipasang pada kode!");
+      modelInput.value = "-";
+      colourInput.value = "-";
+      return;
+    }
 
-    fetch(targetUrl, {
-      method: "GET",
-      redirect: "follow"
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Network response error");
-      return res.json();
-    })
-    .then(data => {
-      if (data.status === "success") {
-        modelInput.value = data.carModel || "-";
-        colourInput.value = data.colour || "-";
-      } else {
-        modelInput.value = "Tidak Ditemukan";
-        colourInput.value = "Tidak Ditemukan";
-        alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini tidak terdaftar di tab MASTER DATA.");
-      }
-    })
-    .catch(err => {
-      console.error("Fetch direct gagal, mencoba JSONP fallback...", err);
-      fetchVinViaJSONP(vin);
-    });
+    fetchViaJSONP(vin);
   }
 
-  // Fallback via Script Injection untuk menghindari blokir CORS di Safari/iOS
-  function fetchVinViaJSONP(vin) {
+  // Menggunakan JSONP untuk menghindari CORS Block di iPhone / GitHub Pages
+  function fetchViaJSONP(vin) {
     const modelInput = document.getElementById('carModel');
     const colourInput = document.getElementById('colour');
 
-    window.handleVinResponse = function(data) {
+    const callbackName = 'handleVin_' + Math.random().toString(36).substring(2, 9);
+
+    window[callbackName] = function(data) {
       if (data && data.status === "success") {
         modelInput.value = data.carModel || "-";
         colourInput.value = data.colour || "-";
       } else {
         modelInput.value = "Tidak Ditemukan";
         colourInput.value = "Tidak Ditemukan";
-        alert("VIN terdeteksi: " + vin + "\nTetapi VIN tidak ada di MASTER DATA.");
+        alert("VIN: " + vin + " tidak ada di tab MASTER DATA.");
       }
-      delete window.handleVinResponse;
+      delete window[callbackName];
+      const elem = document.getElementById(callbackName);
+      if (elem) elem.remove();
     };
 
     const script = document.createElement('script');
-    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=handleVinResponse`;
+    script.id = callbackName;
+    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=${callbackName}`;
     script.onerror = function() {
-      modelInput.value = "Error Koneksi";
-      colourInput.value = "Error Koneksi";
-      alert("Gagal terhubung ke Google Sheets. Pastikan 'Who has access' di Deploy Apps Script diatur ke 'Anyone'.");
+      modelInput.value = "Gagal Akses";
+      colourInput.value = "Gagal Akses";
+      alert("Gagal terhubung ke Google Sheets.");
+      delete window[callbackName];
+      script.remove();
     };
     document.body.appendChild(script);
   }
 
+  // Fungsi Kamera Live Scan
   function toggleScanner() {
     if (isScanning) {
       stopScanner();
@@ -400,14 +404,19 @@
     const viewport = document.getElementById('interactive');
     viewport.style.display = 'block';
 
+    if (typeof Quagga === "undefined") {
+      alert("Library Scanner belum siap, periksa koneksi internet Anda.");
+      return;
+    }
+
     Quagga.init({
       inputStream: {
         name: "Live",
         type: "LiveStream",
         target: viewport,
         constraints: {
-          width: { min: 1280, ideal: 1920 },
-          height: { min: 720, ideal: 1080 },
+          width: { min: 640, ideal: 1280 },
+          height: { min: 480, ideal: 720 },
           facingMode: "environment"
         },
       },
@@ -417,7 +426,7 @@
       locate: true
     }, function(err) {
       if (err) {
-        alert("Gagal membuka kamera: " + err);
+        alert("Akses kamera gagal/ditolak: " + err);
         viewport.style.display = 'none';
         return;
       }
@@ -431,7 +440,7 @@
   function onBarcodeDetected(result) {
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      if (code.length >= 10) {
+      if (code.length >= 8) {
         stopScanner();
         fetchVinDetails(code);
       }
@@ -447,8 +456,8 @@
     }
   }
 
-  // Upload Foto Barcode dengan Auto Canvas Resizing
-  document.getElementById('file-input').addEventListener('change', e => {
+  // Handling Upload Foto Barcode
+  function handleFileUpload(e) {
     if (e.target.files.length === 0) return;
     const file = e.target.files[0];
 
@@ -456,7 +465,7 @@
     reader.onload = function(event) {
       const img = new Image();
       img.onload = function() {
-        const MAX_WIDTH = 1200;
+        const MAX_WIDTH = 1000;
         let width = img.width;
         let height = img.height;
 
@@ -468,32 +477,30 @@
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         Quagga.decodeSingle({
           src: resizedDataUrl,
           numOfWorkers: 0,
-          decoder: { 
-            readers: ["code_128_reader", "code_39_reader", "code_93_reader"] 
-          },
+          decoder: { readers: ["code_128_reader", "code_39_reader", "code_93_reader"] },
           locate: true
         }, function(result) {
           if (result && result.codeResult && result.codeResult.code) {
             fetchVinDetails(result.codeResult.code);
           } else {
-            alert("Barcode tidak terbaca dari foto. Pastikan posisi barcode fokus dan jelas.");
+            alert("Barcode tidak terbaca dari foto. Pastikan foto jelas dan tidak buram.");
           }
         });
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
-  });
+  }
 
+  // Submit Data
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
@@ -507,6 +514,11 @@
 
     if (!vin) {
       alert("Harap scan atau upload foto barcode VIN terlebih dahulu!");
+      return;
+    }
+
+    if (selectedProblems.length === 0) {
+      alert("Harap pilih minimal 1 jenis Problem!");
       return;
     }
 
@@ -524,11 +536,12 @@
 
     fetch(SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     })
-    .then(res => res.json())
-    .then(response => {
-      alert("Data berhasil tersimpan!");
+    .then(() => {
+      alert("Data berhasil terkirim!");
       document.getElementById("vinInput").value = "";
       document.getElementById("carModel").value = "";
       document.getElementById("colour").value = "";
@@ -536,7 +549,7 @@
       document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
     })
     .catch(error => {
-      alert("Gagal mengirim data. Cek koneksi Anda.");
+      alert("Gagal mengirim data.");
       console.error(error);
     })
     .finally(() => {
