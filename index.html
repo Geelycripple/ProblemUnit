@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
 
-  <!-- Quagga2: Engine Scanner Khusus Barcode 1D / Code 128 Kertas Fisik -->
+  <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <style>
@@ -95,8 +95,7 @@
       margin-left: 2px;
     }
 
-    input[type="text"], 
-    textarea {
+    input[type="text"], textarea {
       width: 100%;
       padding: 12px 14px;
       background-color: var(--input-bg);
@@ -198,7 +197,6 @@
       font-weight: 500;
     }
 
-    /* Container Scanner Quagga */
     #interactive.viewport {
       position: relative;
       width: 100%;
@@ -217,15 +215,6 @@
       object-fit: cover;
     }
 
-    #interactive.viewport canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Panduan Garis Merah Pemindaian */
     .scan-line {
       position: absolute;
       top: 50%;
@@ -252,7 +241,6 @@
     <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
   </div>
 
-  <!-- Date & Time Row -->
   <div class="form-group form-group-row">
     <div>
       <label>Date <span class="cn">日期</span><span class="req">*</span></label>
@@ -273,28 +261,27 @@
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
-    <!-- Viewport Scanner -->
     <div id="interactive" class="viewport">
       <div class="scan-line"></div>
     </div>
 
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode kertas.</div>
+    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
   </div>
 
   <!-- Car Model -->
   <div class="form-group">
     <label>Car Model <span class="cn">车型</span></label>
-    <input type="text" id="carModel" placeholder="Masukkan Car Model">
+    <input type="text" id="carModel" placeholder="Akan terisi otomatis...">
   </div>
 
   <!-- Colour -->
   <div class="form-group">
     <label>Colour <span class="cn">颜色</span></label>
-    <input type="text" id="colour" placeholder="Masukkan Warna Vehicle">
+    <input type="text" id="colour" placeholder="Akan terisi otomatis...">
   </div>
 
-  <!-- Multi-Select Problem (Scroll Box) -->
+  <!-- Multi-Select Problem -->
   <div class="form-group">
     <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
     <div class="scroll-select-box">
@@ -323,12 +310,12 @@
     <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
   </div>
 
-  <!-- Submit Button -->
   <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Submit Data 提交</button>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec";
+  // PASTAISKAN URL APPS SCRIPT ANDA SUDAH BENAR DI SINI
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec"; 
   let isScanning = false;
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -336,6 +323,49 @@
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   });
+
+  // Fungsi Auto Lookup ke Google Sheet saat VIN didapatkan
+  function fetchVinDetails(vin) {
+    document.getElementById('vinInput').value = vin;
+    const modelInput = document.getElementById('carModel');
+    const colourInput = document.getElementById('colour');
+
+    modelInput.value = "Mencari...";
+    colourInput.value = "Mencari...";
+
+    // Reset status readonly saat proses pencarian
+    modelInput.readOnly = false;
+    colourInput.readOnly = false;
+
+    fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          modelInput.value = data.carModel || "-";
+          colourInput.value = data.colour || "-";
+
+          // Kunci kolom menjadi READ ONLY jika data VIN berhasil ditemukan di MASTER DATA
+          modelInput.readOnly = true;
+          colourInput.readOnly = true;
+        } else {
+          modelInput.value = "";
+          colourInput.value = "";
+
+          // Biarkan tetap dapat diisi manual jika VIN tidak terdaftar
+          modelInput.readOnly = false;
+          colourInput.readOnly = false;
+
+          alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini belum ada di tab MASTER DATA.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        modelInput.value = "";
+        colourInput.value = "";
+        modelInput.readOnly = false;
+        colourInput.readOnly = false;
+      });
+  }
 
   function toggleScanner() {
     if (isScanning) {
@@ -357,18 +387,12 @@
         constraints: {
           width: { min: 1280, ideal: 1920 },
           height: { min: 720, ideal: 1080 },
-          facingMode: "environment", // Paksa Kamera Belakang HP
-          focusMode: "continuous"
+          facingMode: "environment"
         },
       },
-      locator: {
-        patchSize: "medium",
-        halfSample: false
-      },
+      locator: { patchSize: "medium", halfSample: false },
       numOfWorkers: 2,
-      decoder: {
-        readers: ["code_128_reader", "code_39_reader"] // Khusus Barcode Chassis/VIN Kertas
-      },
+      decoder: { readers: ["code_128_reader", "code_39_reader"] },
       locate: true
     }, function(err) {
       if (err) {
@@ -386,10 +410,9 @@
   function onBarcodeDetected(result) {
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      // Validasi panjang VIN kendaraan (biasanya 17 karakter)
       if (code.length >= 10) {
-        document.getElementById('vinInput').value = code;
         stopScanner();
+        fetchVinDetails(code);
       }
     }
   }
@@ -403,7 +426,6 @@
     }
   }
 
-  // Scan dari Foto Galeri menggunakan Engine Quagga
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -412,15 +434,13 @@
     Quagga.decodeSingle({
       src: imgUrl,
       numOfWorkers: 0,
-      decoder: {
-        readers: ["code_128_reader", "code_39_reader"]
-      },
+      decoder: { readers: ["code_128_reader", "code_39_reader"] },
       locate: true
     }, function(result) {
       if (result && result.codeResult) {
-        document.getElementById('vinInput').value = result.codeResult.code;
+        fetchVinDetails(result.codeResult.code);
       } else {
-        alert("Barcode tidak terbaca dari foto ini. Pastikan posisi barcode mendatar lurus dan pencahayaan terang.");
+        alert("Barcode tidak terbaca dari foto ini. Coba foto ulang lebih jelas & mendatar.");
       }
     });
   });
@@ -459,15 +479,19 @@
     })
     .then(res => res.json())
     .then(response => {
-      alert("Data berhasil tersimpan di Google Sheet!");
+      alert("Data berhasil tersimpan!");
       document.getElementById("vinInput").value = "";
       document.getElementById("carModel").value = "";
       document.getElementById("colour").value = "";
       document.getElementById("problemDescription").value = "";
       document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
+
+      // Kembalikan atribut input ke semula setelah submit
+      document.getElementById("carModel").readOnly = false;
+      document.getElementById("colour").readOnly = false;
     })
     .catch(error => {
-      alert("Gagal mengirim data. Cek koneksi atau URL Apps Script Anda.");
+      alert("Gagal mengirim data. Cek koneksi Anda.");
       console.error(error);
     })
     .finally(() => {
