@@ -106,7 +106,6 @@
       transition: all 0.2s ease-in-out;
     }
 
-    /* Style Readonly Abu-abu Ter-lock */
     input[readonly] {
       background-color: var(--input-readonly) !important;
       color: #475569 !important;
@@ -190,7 +189,6 @@
       font-weight: 500;
     }
 
-    /* Kotak Kamera Luas dan Penuh tanpa Batas Pemotongan */
     #interactive.viewport {
       position: relative;
       width: 100%;
@@ -304,8 +302,8 @@
 </div>
 
 <script>
-  // PASTAISKAN MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "hhttps://script.google.com/macros/s/AKfycbzwVF7O05Mg_Cvkf-pxoifyNQdrnsH--LZ7bOG7bnOj76CVZQogb4jUKllhMWHvSD0jOg/exec"; 
+  // TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxerwqwa1JYZ4ZoUXGfx5DwA84f2ufdrar2Kn-UpEZygqGotKd1IklaD4GiHRl9CDbyXQ/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -320,8 +318,8 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  // Auto Lookup ke Google Sheets
-  function fetchVinDetails(vin) {
+  // Lookup data menggunakan Fetch API yang stabil
+  async function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
     const colourInput = document.getElementById('colour');
@@ -329,50 +327,34 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    if (!SCRIPT_URL || SCRIPT_URL.includes("URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA")) {
-      alert("URL Web App Google Apps Script belum dipasang!");
+    if (!SCRIPT_URL || SCRIPT_URL.includes("AKfycb...")) {
+      alert("URL Web App Google Apps Script belum dipasang pada variabel SCRIPT_URL!");
       modelInput.value = "-";
       colourInput.value = "-";
       return;
     }
 
-    fetchViaJSONP(vin);
-  }
+    try {
+      const response = await fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`);
+      const data = await response.json();
 
-  function fetchViaJSONP(vin) {
-    const modelInput = document.getElementById('carModel');
-    const colourInput = document.getElementById('colour');
-
-    const callbackName = 'handleVin_' + Math.random().toString(36).substring(2, 9);
-
-    window[callbackName] = function(data) {
       if (data && data.status === "success") {
         modelInput.value = data.carModel || "-";
         colourInput.value = data.colour || "-";
       } else {
         modelInput.value = "Tidak Ditemukan";
         colourInput.value = "Tidak Ditemukan";
-        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
+        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA Google Sheets.");
       }
-      delete window[callbackName];
-      const elem = document.getElementById(callbackName);
-      if (elem) elem.remove();
-    };
-
-    const script = document.createElement('script');
-    script.id = callbackName;
-    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=${callbackName}`;
-    script.onerror = function() {
+    } catch (err) {
+      console.error(err);
       modelInput.value = "Gagal Akses";
       colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets.");
-      delete window[callbackName];
-      script.remove();
-    };
-    document.body.appendChild(script);
+      alert("Gagal terhubung ke Google Sheets. Pastikan 'Who has access' di Apps Script diatur ke 'Anyone'.");
+    }
   }
 
-  // Kamera Live Scan Ringan & Lancar
+  // Kamera Live Scan
   function toggleScanner() {
     if (isScanning) {
       stopScanner();
@@ -402,10 +384,10 @@
         },
       },
       locator: { 
-        patchSize: "large", // Dibuat large agar barcode panjang seperti PT Handal mudah tertangkap
-        halfSample: true    // Mempercepat kinerja dan menghilangkan lag
+        patchSize: "large",
+        halfSample: true
       },
-      numOfWorkers: 1,      // Mengurangi beban CPU HP agar tidak patah-patah/lag
+      numOfWorkers: 1,
       decoder: { 
         readers: ["code_128_reader", "code_39_reader"] 
       },
@@ -426,7 +408,6 @@
   function onBarcodeDetected(result) {
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      // Memastikan pembacaan VIN valid (minimal 10 karakter)
       if (code.length >= 10) {
         stopScanner();
         fetchVinDetails(code);
@@ -443,7 +424,7 @@
     }
   }
 
-  // Submit Form Data
+  // Submit Form Data ke Google Sheet
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
@@ -484,7 +465,7 @@
       body: JSON.stringify(payload)
     })
     .then(() => {
-      alert("Data berhasil terkirim!");
+      alert("Data berhasil terkirim ke Google Sheets!");
       document.getElementById("vinInput").value = "";
       document.getElementById("carModel").value = "";
       document.getElementById("colour").value = "";
