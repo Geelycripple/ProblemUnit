@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
 
-  <!-- High-Performance ZXing Engine -->
-  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <!-- Library Scan Barcode/QR yang Paling Stabil untuk Mobile/iOS -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <!-- JS-SDK WeCom -->
   <script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
 
@@ -110,7 +110,6 @@
       transition: all 0.2s ease-in-out;
     }
 
-    /* Styling Khusus Input Readonly / Terkunci */
     input[readonly] {
       background-color: var(--input-readonly) !important;
       color: #475569 !important;
@@ -165,7 +164,6 @@
       opacity: 0.9;
     }
 
-    /* Scrollable Multi-Select Box Style */
     .scroll-select-box {
       max-height: 140px;
       overflow-y: auto;
@@ -176,14 +174,6 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-    }
-
-    .scroll-select-box::-webkit-scrollbar {
-      width: 6px;
-    }
-    .scroll-select-box::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
     }
 
     .scroll-option {
@@ -210,36 +200,14 @@
       font-weight: 500;
     }
 
-    /* Video Scanner Container */
-    #scanner-container {
-      position: relative;
+    /* Container Scanner */
+    #reader {
       width: 100%;
-      height: 220px;
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 12px;
       display: none;
-      background-color: #000;
       border: 2px solid var(--btn-blue);
-    }
-
-    #videoPreview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .scan-guide {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 85%;
-      height: 45%;
-      border: 2px dashed #10b981;
-      border-radius: 8px;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
-      pointer-events: none;
     }
 
     .hint-text {
@@ -272,17 +240,14 @@
   <div class="form-group">
     <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
     <div class="btn-grid">
-      <button type="button" class="btn btn-green" onclick="handleScanRequest()">📷 Live Scan</button>
+      <button type="button" class="btn btn-green" onclick="toggleLiveScan()">📷 Live Scan</button>
       <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Foto Barcode</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
-    <div id="scanner-container">
-      <video id="videoPreview" playsinline></video>
-      <div class="scan-guide"></div>
-    </div>
+    <!-- Video Scanner Region -->
+    <div id="reader"></div>
 
-    <!-- Terkunci Readonly: Hanya terisi dari hasil Scan/Upload -->
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
     <div class="hint-text">*Nomor VIN terisi otomatis melalui Live Scan atau Foto Barcode.</div>
   </div>
@@ -335,80 +300,82 @@
 <script>
   const SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA";
 
-  let codeReader = null;
+  let html5QrCode = null;
   let isScanning = false;
 
   window.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-    
-    // Inisialisasi Engine ZXing
-    codeReader = new ZXing.BrowserMultiFormatReader();
+
+    // Inisialisasi Scanner Engine
+    html5QrCode = new Html5Qrcode("reader");
   });
 
-  function handleScanRequest() {
-    // 1. Opsi Native WeCom (jika didukung)
-    if (typeof wx !== 'undefined' && wx.scanQRCode) {
-      wx.scanQRCode({
-        needResult: 1,
-        scanType: ["barCode", "qrCode"],
-        success: function (res) {
-          let result = res.resultStr;
-          if (result.includes(',')) result = result.split(',')[1];
-          document.getElementById('vinInput').value = result;
-        },
-        fail: function () {
-          startZXingScanner();
-        }
-      });
+  // Toggle Kamera Live Scan
+  function toggleLiveScan() {
+    if (isScanning) {
+      stopScanner();
     } else {
-      // 2. Browser Camera Scanner
-      if (isScanning) {
-        stopZXingScanner();
-      } else {
-        startZXingScanner();
-      }
+      startScanner();
     }
   }
 
-  function startZXingScanner() {
-    const container = document.getElementById('scanner-container');
-    container.style.display = 'block';
-    isScanning = true;
+  function startScanner() {
+    const readerElement = document.getElementById('reader');
+    readerElement.style.display = 'block';
 
-    codeReader.decodeFromVideoDevice(undefined, 'videoPreview', (result, err) => {
-      if (result) {
-        document.getElementById('vinInput').value = result.getText();
-        stopZXingScanner();
+    const config = {
+      fps: 15,
+      qrbox: { width: 280, height: 120 }, // Area scan persegi panjang khusus Barcode 1D / VIN
+      aspectRatio: 1.0,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.QR_CODE
+      ]
+    };
+
+    html5QrCode.start(
+      { facingMode: "environment" }, // Paksa Kamera Belakang HP
+      config,
+      (decodedText) => {
+        document.getElementById('vinInput').value = decodedText;
+        stopScanner();
+      },
+      (errorMessage) => {
+        // Logging error ringan jika barcode belum pas di area scan
       }
+    ).then(() => {
+      isScanning = true;
     }).catch(err => {
-      alert("Akses kamera tidak diizinkan atau kamera tidak ditemukan: " + err);
-      container.style.display = 'none';
+      alert("Izin kamera ditolak atau tidak didukung oleh browser ini: " + err);
+      readerElement.style.display = 'none';
       isScanning = false;
     });
   }
 
-  function stopZXingScanner() {
-    if (codeReader) {
-      codeReader.reset();
-      document.getElementById('scanner-container').style.display = 'none';
-      isScanning = false;
+  function stopScanner() {
+    if (html5QrCode && isScanning) {
+      html5QrCode.stop().then(() => {
+        document.getElementById('reader').style.display = 'none';
+        isScanning = false;
+      }).catch(err => console.error("Gagal menghentikan scanner: ", err));
     }
   }
 
-  // Scan dari Foto / Gambar Galeri Barcode
+  // Handle Scan dari Upload Foto Galeri
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const imgUrl = URL.createObjectURL(file);
 
-    codeReader.decodeFromImageUrl(imgUrl)
-      .then(result => {
-        document.getElementById('vinInput').value = result.getText();
+    const imageFile = e.target.files[0];
+
+    html5QrCode.scanFile(imageFile, true)
+      .then(decodedText => {
+        document.getElementById('vinInput').value = decodedText;
       })
       .catch(err => {
-        alert("Barcode tidak terbaca dari foto ini. Pastikan foto terang & barcode terlihat jelas.");
+        alert("Barcode tidak terbaca! Pastikan foto barcode terlihat jelas, tidak buram, dan tegak lurus.");
       });
   });
 
