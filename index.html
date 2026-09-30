@@ -4,33 +4,39 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Inspection & Sign Off Form</title>
-  <!-- Library Scan Barcode Terbaru (Optimized untuk WeCom & 1D Barcodes) -->
+  <!-- Library Scan Barcode Terbaru (WeCom Barcodes Compatible) -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
-      --bg-color: #0f172a;
-      --card-bg: #1e293b;
-      --input-bg: #334155;
-      --accent-color: #38bdf8;
-      --accent-purple: #a855f7;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --border-color: #475569;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --input-focus: #2563eb;
+      --text-main: #0f172a;
+      --text-label: #334155;
+      --text-muted: #64748b;
+      --btn-green: #10b981;
+      --btn-purple: #8b5cf6;
+      --btn-blue: #2563eb;
+      --radius: 12px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      padding: 16px;
+      padding: 16px 12px 32px 12px;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
       min-height: 100vh;
     }
 
@@ -38,51 +44,93 @@
       width: 100%;
       max-width: 480px;
       background-color: var(--card-bg);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      height: fit-content;
+      border-radius: 20px;
+      padding: 24px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
     }
 
     .form-header {
       margin-bottom: 24px;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid #f1f5f9;
       padding-bottom: 12px;
     }
 
     .form-header h2 {
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--text-main);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+    }
+
+    .form-group-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
     }
 
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 600;
+      color: var(--text-label);
+      margin-bottom: 6px;
+    }
+
+    label span.cn {
+      font-weight: 500;
       color: var(--text-muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      margin-left: 4px;
+    }
+
+    label span.req {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    /* Styles for Inputs & Controls */
+    input[type="text"], 
+    input[type="date"], 
+    input[type="time"], 
+    textarea, 
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease-in-out;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
     .btn-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .btn {
-      padding: 12px 16px;
+      padding: 11px 14px;
       border: none;
-      border-radius: 10px;
+      border-radius: var(--radius);
       font-weight: 600;
       font-size: 0.85rem;
       cursor: pointer;
@@ -91,27 +139,27 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      color: #ffffff;
     }
 
-    .btn-cyan {
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: #ffffff;
+    .btn-green {
+      background-color: var(--btn-green);
     }
 
     .btn-purple {
-      background: linear-gradient(135deg, #7e22ce, #a855f7);
-      color: #ffffff;
+      background-color: var(--btn-purple);
     }
 
     .btn-submit {
       width: 100%;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      background-color: var(--btn-blue);
       color: #ffffff;
       padding: 14px;
       font-size: 1rem;
-      border-radius: 10px;
-      margin-top: 10px;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      font-weight: 700;
+      border-radius: var(--radius);
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
     }
 
     .btn:active {
@@ -119,79 +167,64 @@
       opacity: 0.9;
     }
 
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 12px 14px;
-      background-color: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    input[type="text"]:focus, textarea:focus {
-      border-color: var(--accent-color);
-    }
-
-    /* Modern Scrollable Multi-Select Box */
+    /* Scrollable Multi-Select Box Style */
     .scroll-select-box {
       max-height: 140px;
       overflow-y: auto;
-      background-color: var(--input-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 8px;
+      background-color: #f8fafc;
+      border: 1px solid var(--input-border);
+      border-radius: var(--radius);
+      padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
-    /* Custom Scrollbar */
     .scroll-select-box::-webkit-scrollbar {
       width: 6px;
     }
     .scroll-select-box::-webkit-scrollbar-thumb {
-      background: var(--border-color);
+      background: #cbd5e1;
       border-radius: 10px;
     }
 
     .scroll-option {
       display: flex;
       align-items: center;
-      padding: 8px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.03);
+      background-color: #ffffff;
+      border: 1px solid #f1f5f9;
       cursor: pointer;
       user-select: none;
-      transition: background 0.2s;
+      transition: background 0.15s;
     }
 
     .scroll-option:hover {
-      background-color: rgba(255, 255, 255, 0.08);
+      background-color: #f1f5f9;
     }
 
     .scroll-option input[type="checkbox"] {
       margin-right: 12px;
       width: 18px;
       height: 18px;
-      accent-color: var(--accent-color);
+      accent-color: var(--btn-blue);
       cursor: pointer;
     }
 
     .scroll-option span {
       font-size: 0.9rem;
       color: var(--text-main);
+      font-weight: 500;
     }
 
     #reader {
       width: 100%;
-      border-radius: 10px;
+      border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 12px;
       display: none;
-      border: 2px solid var(--accent-color);
+      border: 2px solid var(--btn-blue);
     }
 
     .hint-text {
@@ -205,73 +238,96 @@
 
 <div class="form-container">
   <div class="form-header">
-    <h2>Inspection & Sign Off Form</h2>
+    <h2>Inspection Details <span style="font-size: 1rem; color: #64748b; font-weight: normal;">检查详情</span></h2>
+  </div>
+
+  <!-- Date & Time Row -->
+  <div class="form-group form-group-row">
+    <div>
+      <label>Date <span class="cn">日期</span><span class="req">*</span></label>
+      <input type="text" id="dateInput" readonly>
+    </div>
+    <div>
+      <label>Time <span class="cn">时间</span><span class="req">*</span></label>
+      <input type="text" id="timeInput" readonly>
+    </div>
   </div>
 
   <!-- VIN Section -->
   <div class="form-group">
-    <label>VIN NO *</label>
+    <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
     <div class="btn-grid">
-      <button type="button" class="btn btn-cyan" onclick="startScanner()">📷 Live Scan</button>
-      <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Unggah Gambar</button>
+      <button type="button" class="btn btn-green" onclick="startScanner()">📷 Live Scan</button>
+      <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Foto Barcode</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
     <div id="reader"></div>
 
-    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan terisi di sini..." required>
-    <div class="hint-text">*Gunakan 'Unggah Gambar' jika kamera WeCom sulit fokus pada barcode.</div>
+    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." required>
+    <div class="hint-text">*Gunakan 'Foto Barcode' jika live scan kamera sulit fokus.</div>
   </div>
 
   <!-- Car Model -->
   <div class="form-group">
-    <label>CAR MODEL</label>
-    <input type="text" id="carModel" placeholder="Masukkan Car Model">
+    <label>Car Model <span class="cn">车型</span></label>
+    <input type="text" id="carModel" placeholder="Car Model akan terisi otomatis / manual">
   </div>
 
   <!-- Colour -->
   <div class="form-group">
-    <label>COLOUR</label>
-    <input type="text" id="colour" placeholder="Masukkan Warna Vehicle">
+    <label>Colour <span class="cn">颜色</span></label>
+    <input type="text" id="colour" placeholder="Warna kendaraan">
   </div>
 
-  <!-- Multi-Select Problem (Scrollable Box) -->
+  <!-- Multi-Select Problem (Scroll Box) -->
   <div class="form-group">
-    <label>PROBLEM * (Multi-Select Scroll)</label>
+    <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
     <div class="scroll-select-box">
       <label class="scroll-option">
         <input type="checkbox" name="problem" value="Electrical">
-        <span>Electrical</span>
+        <span>Electrical 电气问题</span>
       </label>
       <label class="scroll-option">
         <input type="checkbox" name="problem" value="Dent Issue">
-        <span>Dent Issue</span>
+        <span>Dent Issue 凹陷/外观</span>
       </label>
       <label class="scroll-option">
         <input type="checkbox" name="problem" value="Repair">
-        <span>Repair</span>
+        <span>Repair 维修</span>
       </label>
       <label class="scroll-option">
         <input type="checkbox" name="problem" value="Cripple">
-        <span>Cripple</span>
+        <span>Cripple 瘫痪/残损</span>
       </label>
     </div>
   </div>
 
   <!-- Problem Description -->
   <div class="form-group">
-    <label>PROBLEM DESCRIPTION</label>
-    <textarea id="problemDescription" rows="3" placeholder="Tuliskan detail deskripsi masalah di sini..."></textarea>
+    <label>Problem Description <span class="cn">问题详细描述</span></label>
+    <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
   </div>
 
-  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Kirim Data</button>
+  <!-- Submit Button -->
+  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Submit Data 提交</button>
 </div>
 
 <script>
   // SILAKAN MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3EiMwvpKD-yXxTLPR7VmG8YZg7-XTu5JxY92GK6lsQDtHMfvzOao_XU9yZnTxAXQI-g/exec";
+  const SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA";
 
   let html5Scanner = null;
+
+  // Set otomatis Date & Time saat form dibuka
+  window.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    
+    document.getElementById('dateInput').value = dateStr;
+    document.getElementById('timeInput').value = timeStr;
+  });
 
   // Konfigurasi Scan Engine khusus Barcode 1D (Optimized WeCom Barcodes)
   const barcodeConfig = {
@@ -330,7 +386,7 @@
         document.getElementById("vinInput").value = result.decodedText;
       })
       .catch(err => {
-        alert("Barcode tidak terbaca dari foto ini. Pastikan gambar barcode cukup jelas/terang.");
+        alert("Barcode tidak terbaca dari foto ini. Pastikan foto barcode jelas.");
       });
   });
 
@@ -352,7 +408,7 @@
     }
 
     const btn = document.getElementById("submitBtn");
-    btn.innerText = "Mengirim...";
+    btn.innerText = "Submitting... 提交中";
     btn.disabled = true;
 
     const payload = {
@@ -382,7 +438,7 @@
       console.error(error);
     })
     .finally(() => {
-      btn.innerText = "Kirim Data";
+      btn.innerText = "Submit Data 提交";
       btn.disabled = false;
     });
   }
