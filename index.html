@@ -3,347 +3,250 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vehicle Inspection Form</title>
-  <!-- Library ZXing & Quagga untuk Dekoding Barcode 1D Industri -->
-  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+  <title>Inspection & Sign Off Form</title>
+  <!-- HTML5 QR / Barcode Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f4f6f8; margin: 0; padding: 16px; display: flex; justify-content: center; }
-    .card { background: white; width: 100%; max-width: 500px; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    h2 { margin-top: 0; color: #1a202c; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; font-size: 1.2rem; }
-    .section-title { font-size: 0.9rem; font-weight: bold; color: #4a5568; margin-top: 15px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; color: #2d3748; margin-bottom: 5px; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 0.95rem; background: #fff; }
-    input[readonly] { background-color: #edf2f7; color: #2b6cb0; font-weight: bold; cursor: not-allowed; letter-spacing: 0.5px; }
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    .form-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background-color: #1e1e1e;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    h2 {
+      margin-top: 0;
+      border-bottom: 1px solid #333;
+      padding-bottom: 12px;
+      font-size: 1.4rem;
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-green { background-color: #00a86b; }
+    .btn-purple { background-color: #8a2be2; }
+    .btn-submit { background-color: #2196F3; width: 100%; padding: 12px; font-size: 1rem; margin-top: 10px; }
     
-    .scan-options { display: flex; gap: 8px; margin-bottom: 8px; }
-    .btn-scan { flex: 1; background: #38a169; color: white; border: none; padding: 11px 6px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.82rem; text-align: center; }
-    .btn-photo { flex: 1; background: #805ad5; color: white; border: none; padding: 11px 6px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.82rem; text-align: center; }
-    .btn-scan:hover { background: #2f855a; }
-    .btn-photo:hover { background: #6b46c1; }
-
-    #interactive.viewport { position: relative; width: 100%; height: 220px; overflow: hidden; border-radius: 8px; display: none; margin-bottom: 10px; background: #000; }
-    #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
-    #interactive.viewport canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .scan-guide { position: absolute; top: 50%; left: 5%; right: 5%; height: 2px; background: #e53e3e; box-shadow: 0 0 8px #e53e3e; z-index: 10; transform: translateY(-50%); }
-
-    .upload-area { border: 2px dashed #cbd5e0; border-radius: 8px; padding: 12px; text-align: center; background: #faf5ff; cursor: pointer; margin-bottom: 8px; }
-    .upload-area p { margin: 0; font-size: 0.85rem; color: #6b46c1; font-weight: 600; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 6px;
+      background-color: #2a2a2a;
+      color: white;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
     
-    .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-    .preview-item { position: relative; width: 100%; padding-top: 100%; border-radius: 6px; overflow: hidden; background: #edf2f7; }
-    .preview-item img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-    .remove-btn { position: absolute; top: 2px; right: 2px; background: rgba(229, 62, 62, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-    button.btn-submit { width: 100%; background: #3182ce; color: white; border: none; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; }
-    button.btn-submit:disabled { background: #a0aec0; cursor: not-allowed; }
+    /* Custom Checkbox Group (Multi Select Problem) */
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #2a2a2a;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #444;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .checkbox-item input {
+      accent-color: #8a2be2;
+      width: 16px;
+      height: 16px;
+    }
+    #reader {
+      width: 100%;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .note {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
 
-<div class="card">
+<div class="form-container">
   <h2>Inspection & Sign Off Form</h2>
-  
-  <form id="inspectionForm">
-    <!-- SCANNER BARCODE -->
-    <div class="form-group">
-      <label>VIN NO *</label>
-      <div class="scan-options">
-        <button type="button" class="btn-scan" id="btnLive" onclick="startLiveScan()">📷 Live Scan Kamera</button>
-        <button type="button" class="btn-photo" onclick="document.getElementById('fileBarcode').click()">📸 Foto Barcode / Galeri</button>
-        <input type="file" id="fileBarcode" accept="image/*" style="display:none" onchange="scanImageBarcode(this)">
-      </div>
 
-      <div id="interactive" class="viewport">
-        <div class="scan-guide"></div>
-      </div>
-      
-      <input type="text" id="vinNo" placeholder="Hasil Scan VIN akan muncul di sini" readonly required>
-      <small style="color:#718096; font-size:0.75rem; margin-top:4px; display:block;">
-        *Gunakan "Foto Barcode" jika live kamera sulit fokus.
-      </small>
+  <!-- VIN Section -->
+  <div class="form-group">
+    <label>VIN NO *</label>
+    <div class="btn-group">
+      <button type="button" class="btn btn-green" onclick="startScanner()">📷 Live Scan Kamera</button>
+      <button type="button" class="btn btn-purple" onclick="document.getElementById('qr-input-file').click()">📸 Foto Barcode / Galeri</button>
     </div>
+    <input type="file" id="qr-input-file" accept="image/*" style="display:none">
+    <div id="reader"></div>
+    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini" required>
+    <div class="note">*Gunakan "Foto Barcode" jika live kamera sulit fokus.</div>
+  </div>
 
-    <!-- CAR MODEL -->
-    <div class="form-group">
-      <label>CAR MODEL *</label>
-      <select id="carModel" onchange="updateColorOptions()" required>
-        <option value="">-- Pilih Car Model --</option>
-        <option value="P145">P145</option>
-        <option value="E245">E245</option>
-        <option value="E22H">E22H</option>
-      </select>
+  <!-- Car Model -->
+  <div class="form-group">
+    <label>CAR MODEL *</label>
+    <input type="text" id="carModel" placeholder="Masukkan Car Model">
+  </div>
+
+  <!-- Colour -->
+  <div class="form-group">
+    <label>COLOUR *</label>
+    <input type="text" id="colour" placeholder="Masukkan Warna">
+  </div>
+
+  <!-- Problem (Multi Select Checkbox) -->
+  <div class="form-group">
+    <label>PROBLEM * (Pilih satu atau lebih)</label>
+    <div class="checkbox-group">
+      <label class="checkbox-item"><input type="checkbox" name="problem" value="Electrical"> Electrical</label>
+      <label class="checkbox-item"><input type="checkbox" name="problem" value="Dent Issue"> Dent Issue</label>
+      <label class="checkbox-item"><input type="checkbox" name="problem" value="Repair"> Repair</label>
+      <label class="checkbox-item"><input type="checkbox" name="problem" value="Cripple"> Cripple</label>
     </div>
+  </div>
 
-    <!-- BODY COLOR -->
-    <div class="form-group">
-      <label>BODY COLOR *</label>
-      <select id="bodyColor" required disabled>
-        <option value="">-- Pilih Car Model Terlebih Dahulu --</option>
-      </select>
-    </div>
+  <!-- Problem Description -->
+  <div class="form-group">
+    <label>PROBLEM DESCRIPTION</label>
+    <textarea id="problemDescription" rows="3" placeholder="Tuliskan deskripsi masalah secara manual..."></textarea>
+  </div>
 
-    <!-- LAST STATION -->
-    <div class="form-group">
-      <label>LAST STATION *</label>
-      <select id="lastStation" required>
-        <option value="">-- Pilih Last Station --</option>
-        <option value="Inspection">Inspection</option>
-        <option value="Sign Off">Sign Off</option>
-        <option value="FAI Out">FAI Out</option>
-        <option value="Engine Dock">Engine Dock</option>
-      </select>
-    </div>
-
-    <!-- EVIDENCE INTERIOR -->
-    <div class="section-title">Evidence Interior (Maksimal 6 Foto)</div>
-    <div class="upload-area" onclick="document.getElementById('interiorInput').click()">
-      <p>+ Upload Foto Interior (<span id="intCount">0</span>/6)</p>
-      <input type="file" id="interiorInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files, 'interior')">
-    </div>
-    <div class="preview-grid" id="interiorPreview"></div>
-
-    <!-- EVIDENCE EXTERIOR -->
-    <div class="section-title">Evidence Exterior (Maksimal 6 Foto)</div>
-    <div class="upload-area" onclick="document.getElementById('exteriorInput').click()">
-      <p>+ Upload Foto Exterior (<span id="extCount">0</span>/6)</p>
-      <input type="file" id="exteriorInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files, 'exterior')">
-    </div>
-    <div class="preview-grid" id="exteriorPreview"></div>
-
-    <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
-  </form>
+  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Kirim ke Google Sheet</button>
 </div>
 
 <script>
-  const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1r4YdVjl7k8cRk2lsj3I2oBezEiEqIAJW5PptPGRSYIJcDYXcvEC7IRMbY-sDKXM/exec";
+  // GANTI SCRIPT_URL DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLK23qpH6PdS7LkRZx9H73I5K0oVPi-4jWaw4ZVE940npe21bRTGMJI6Inm45nH11uow/exec"; 
 
-  // DATA WARNA DINAMIS
-  const colorData = {
-    "P145": ["MOYU BLACK", "SIMPLE WHITE", "PEARL SILVER", "SUPERSONIC GREEN", "CHINA BLUE", "TWILIGHT GRAY"],
-    "E245": ["Carbon Black", "Moonlight Silvery", "Turquoise Green", "Frost Grey", "Snowy White"],
-    "E22H": ["Satin Silver", "Magnetic Grey", "Athens White", "Porcelain Pink", "Cheese Yellow", "Aurora Blue", "Dopamine Green"]
-  };
+  let html5QrCode = new Html5Qrcode("reader");
 
-  function updateColorOptions() {
-    const modelSelect = document.getElementById('carModel').value;
-    const colorSelect = document.getElementById('bodyColor');
-    colorSelect.innerHTML = '';
-
-    if (modelSelect && colorData[modelSelect]) {
-      colorSelect.disabled = false;
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = "";
-      defaultOpt.innerText = "-- Pilih Body Color --";
-      colorSelect.appendChild(defaultOpt);
-
-      colorData[modelSelect].forEach(color => {
-        const opt = document.createElement('option');
-        opt.value = color;
-        opt.innerText = color;
-        colorSelect.appendChild(opt);
-      });
-    } else {
-      colorSelect.disabled = true;
-      const defaultOpt = document.createElement('option');
-      defaultOpt.value = "";
-      defaultOpt.innerText = "-- Pilih Car Model Terlebih Dahulu --";
-      colorSelect.appendChild(defaultOpt);
-    }
+  // Handler Scan dari Kamera Live
+  function startScanner() {
+    document.getElementById("reader").style.display = "block";
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 150 } },
+      (decodedText) => {
+        onVinScanned(decodedText);
+        html5QrCode.stop();
+        document.getElementById("reader").style.display = "none";
+      },
+      (errorMessage) => { /* ignore errors */ }
+    ).catch(err => alert("Gagal membuka kamera: " + err));
   }
 
-  // 1. LIVE CAMERA SCANNER (QUAGGA2 ENHANCED)
-  function startLiveScan() {
-    const container = document.getElementById('interactive');
-    container.style.display = 'block';
-
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: container,
-        constraints: {
-          width: { min: 1280, ideal: 1920 },
-          height: { min: 720, ideal: 1080 },
-          facingMode: "environment"
-        }
-      },
-      decoder: {
-        readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader", "ean_reader"]
-      },
-      locate: true
-    }, function(err) {
-      if (err) {
-        alert("Gagal membuka kamera: " + err);
-        container.style.display = 'none';
-        return;
-      }
-      Quagga.start();
-    });
-
-    Quagga.onDetected(function(result) {
-      if (result && result.codeResult && result.codeResult.code) {
-        const code = result.codeResult.code;
-        if (code.length >= 8) { // Validasi nomor VIN
-          document.getElementById('vinNo').value = code;
-          alert("VIN Berhasil Di-scan: " + code);
-          Quagga.stop();
-          container.style.display = 'none';
-        }
-      }
-    });
-  }
-
-  // 2. FOTO BARCODE / UPLOAD FILE SCANNER (ZXING OCR ENGINE)
-  function scanImageBarcode(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    
-    const codeReader = new ZXing.BrowserMultiFormatReader();
-    const imgUrl = URL.createObjectURL(file);
-
-    codeReader.decodeFromImageUrl(imgUrl)
-      .then(result => {
-        document.getElementById('vinNo').value = result.getText();
-        alert("Barcode VIN Berhasil Terbaca dari Foto: " + result.getText());
+  // Handler Upload Foto Barcode dari Galeri
+  document.getElementById('qr-input-file').addEventListener('change', e => {
+    if (e.target.files.length === 0) return;
+    const imageFile = e.target.files[0];
+    html5QrCode.scanFile(imageFile, true)
+      .then(decodedText => {
+        onVinScanned(decodedText);
       })
       .catch(err => {
-        // Fallback coba scan ulang dengan Quagga2 Image Decoder
-        Quagga.decodeSingle({
-          src: imgUrl,
-          numOfWorkers: 0,
-          inputStream: { size: 1280 },
-          decoder: { readers: ["code_128_reader", "code_39_reader"] }
-        }, function(result) {
-          if (result && result.codeResult) {
-            document.getElementById('vinNo').value = result.codeResult.code;
-            alert("Barcode VIN Berhasil Terbaca: " + result.codeResult.code);
-          } else {
-            alert("Gagal membaca barcode dari foto. Pastikan gambar jelas dan tidak terlalu silau!");
-          }
-        });
+        alert("Barcode tidak terdeteksi dari gambar. Pastikan gambar jelas.");
       });
+  });
+
+  // Jalankan ketika VIN berhasil discan
+  function onVinScanned(vin) {
+    document.getElementById("vinInput").value = vin;
+    // Panggilan opsional jika ingin melakukan auto-lookup ke database Sheet Master
   }
 
-  // MANAGEMENT FOTO INTERIOR & EXTERIOR
-  let interiorFiles = [];
-  let exteriorFiles = [];
+  // Submit Data Ke Google Sheets
+  function submitForm() {
+    const vin = document.getElementById("vinInput").value;
+    const carModel = document.getElementById("carModel").value;
+    const colour = document.getElementById("colour").value;
+    const problemDescription = document.getElementById("problemDescription").value;
 
-  function handleFiles(files, type) {
-    const list = type === 'interior' ? interiorFiles : exteriorFiles;
-    const max = 6;
-
-    for (let file of files) {
-      if (list.length < max) {
-        compressImage(file, 800, 0.7, function(compressedBase64) {
-          list.push(compressedBase64);
-          renderPreviews(type);
-        });
-      } else {
-        alert("Maksimal 6 foto per kategori!");
-        break;
-      }
-    }
-  }
-
-  function compressImage(file, maxWidth, quality, callback) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function(event) {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        callback(dataUrl);
-      };
-    };
-  }
-
-  function renderPreviews(type) {
-    const list = type === 'interior' ? interiorFiles : exteriorFiles;
-    const previewContainer = document.getElementById(type + 'Preview');
-    const countLabel = document.getElementById(type === 'interior' ? 'intCount' : 'extCount');
-    
-    previewContainer.innerHTML = '';
-    countLabel.innerText = list.length;
-
-    list.forEach((base64, index) => {
-      const item = document.createElement('div');
-      item.className = 'preview-item';
-      item.innerHTML = `
-        <img src="${base64}">
-        <button type="button" class="remove-btn" onclick="removeFile('${type}', ${index})">✕</button>
-      `;
-      previewContainer.appendChild(item);
+    // Ambil nilai problem yang dicentang
+    const selectedProblems = [];
+    document.querySelectorAll('input[name="problem"]:checked').forEach((checkbox) => {
+      selectedProblems.push(checkbox.value);
     });
-  }
 
-  function removeFile(type, index) {
-    if (type === 'interior') {
-      interiorFiles.splice(index, 1);
-    } else {
-      exteriorFiles.splice(index, 1);
-    }
-    renderPreviews(type);
-  }
-
-  // SUBMIT FORM
-  document.getElementById('inspectionForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const vinVal = document.getElementById('vinNo').value;
-    if (!vinVal) {
-      alert("Harap lakukan Scan / Foto Barcode VIN terlebih dahulu!");
+    if (!vin) {
+      alert("Silakan isi/scan Nomor VIN terlebih dahulu!");
       return;
     }
 
-    const btn = document.getElementById('submitBtn');
+    const btn = document.getElementById("submitBtn");
+    btn.innerText = "Mengirim...";
     btn.disabled = true;
-    btn.innerText = 'MENGIRIM DATA...';
 
-    const formData = new URLSearchParams();
-    formData.append('vinNo', vinVal);
-    formData.append('carModel', document.getElementById('carModel').value);
-    formData.append('bodyColor', document.getElementById('bodyColor').value);
-    formData.append('lastStation', document.getElementById('lastStation').value);
-    formData.append('interiorPhotos', JSON.stringify(interiorFiles));
-    formData.append('exteriorPhotos', JSON.stringify(exteriorFiles));
+    const payload = {
+      vin: vin,
+      carModel: carModel,
+      colour: colour,
+      problem: selectedProblems,
+      problemDescription: problemDescription
+    };
 
-    fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
     })
-    .then(() => {
-      alert('Data dan foto berhasil terkirim!');
-      location.reload();
+    .then(res => res.json())
+    .then(response => {
+      alert("Data berhasil tersimpan ke Google Sheet!");
+      // Reset Form
+      document.getElementById("vinInput").value = "";
+      document.getElementById("carModel").value = "";
+      document.getElementById("colour").value = "";
+      document.getElementById("problemDescription").value = "";
+      document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
     })
-    .catch(err => {
-      alert('Gagal mengirim data. Coba lagi.');
-      console.error(err);
+    .catch(error => {
+      alert("Gagal mengirim data. Pastikan URL Script benar.");
+      console.error(error);
+    })
+    .finally(() => {
+      btn.innerText = "Kirim ke Google Sheet";
       btn.disabled = false;
-      btn.innerText = 'SUBMIT DATA';
     });
-  });
+  }
 </script>
 
 </body>
