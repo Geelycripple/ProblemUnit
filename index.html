@@ -3,9 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Inspection & Sign Off Form</title>
-  <!-- Library Scan Barcode Terbaru (WeCom Barcodes Compatible) -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <title>Unit Problem Geely</title>
+
+  <!-- High-Performance ZXing Engine (Khusus Barcode Fisik Kertas 1D) -->
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
+  <!-- JS-SDK Native WeCom / Enterprise WeChat -->
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+  <script src="https://open.work.weixin.qq.com/wwopen/js/wwlogin-1.2.7.js"></script>
+
   <style>
     :root {
       --bg-color: #f1f5f9;
@@ -92,12 +97,8 @@
       margin-left: 2px;
     }
 
-    /* Styles for Inputs & Controls */
     input[type="text"], 
-    input[type="date"], 
-    input[type="time"], 
-    textarea, 
-    select {
+    textarea {
       width: 100%;
       padding: 12px 14px;
       background-color: var(--input-bg);
@@ -107,15 +108,9 @@
       font-size: 0.95rem;
       outline: none;
       transition: all 0.2s ease-in-out;
-      appearance: none;
-      -webkit-appearance: none;
     }
 
-    input::placeholder, textarea::placeholder {
-      color: #94a3b8;
-    }
-
-    input:focus, textarea:focus, select:focus {
+    input:focus, textarea:focus {
       border-color: var(--input-focus);
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
@@ -142,13 +137,8 @@
       color: #ffffff;
     }
 
-    .btn-green {
-      background-color: var(--btn-green);
-    }
-
-    .btn-purple {
-      background-color: var(--btn-purple);
-    }
+    .btn-green { background-color: var(--btn-green); }
+    .btn-purple { background-color: var(--btn-purple); }
 
     .btn-submit {
       width: 100%;
@@ -197,11 +187,6 @@
       border: 1px solid #f1f5f9;
       cursor: pointer;
       user-select: none;
-      transition: background 0.15s;
-    }
-
-    .scroll-option:hover {
-      background-color: #f1f5f9;
     }
 
     .scroll-option input[type="checkbox"] {
@@ -209,7 +194,6 @@
       width: 18px;
       height: 18px;
       accent-color: var(--btn-blue);
-      cursor: pointer;
     }
 
     .scroll-option span {
@@ -218,13 +202,36 @@
       font-weight: 500;
     }
 
-    #reader {
+    /* Video Viewport Scanner */
+    #scanner-container {
+      position: relative;
       width: 100%;
+      height: 200px;
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 12px;
       display: none;
+      background-color: #000;
       border: 2px solid var(--btn-blue);
+    }
+
+    #videoPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scan-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 50%;
+      border: 2px dashed #10b981;
+      border-radius: 8px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
     }
 
     .hint-text {
@@ -238,7 +245,7 @@
 
 <div class="form-container">
   <div class="form-header">
-    <h2>Inspection Details <span style="font-size: 1rem; color: #64748b; font-weight: normal;">检查详情</span></h2>
+    <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
   </div>
 
   <!-- Date & Time Row -->
@@ -257,15 +264,18 @@
   <div class="form-group">
     <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
     <div class="btn-grid">
-      <button type="button" class="btn btn-green" onclick="startScanner()">📷 Live Scan</button>
+      <button type="button" class="btn btn-green" onclick="handleScanRequest()">📷 Live Scan</button>
       <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Foto Barcode</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
-    <div id="reader"></div>
+    <div id="scanner-container">
+      <video id="videoPreview"></video>
+      <div class="scan-guide"></div>
+    </div>
 
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." required>
-    <div class="hint-text">*Gunakan 'Foto Barcode' jika live scan kamera sulit fokus.</div>
+    <div class="hint-text">*Arahkan sejajar garis titik-titik pada barcode kertas.</div>
   </div>
 
   <!-- Car Model -->
@@ -314,83 +324,78 @@
 </div>
 
 <script>
-  // SILAKAN MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
   const SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA";
 
-  let html5Scanner = null;
+  let codeReader = null;
 
-  // Set otomatis Date & Time saat form dibuka
   window.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
     
-    document.getElementById('dateInput').value = dateStr;
-    document.getElementById('timeInput').value = timeStr;
+    // Inisialisasi High-Precision ZXing Engine
+    codeReader = new ZXing.BrowserMultiFormatReader();
   });
 
-  // Konfigurasi Scan Engine khusus Barcode 1D (Optimized WeCom Barcodes)
-  const barcodeConfig = {
-    fps: 15,
-    qrbox: { width: 280, height: 120 },
-    formatsToSupport: [
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.UPC_A
-    ]
-  };
-
-  // Live Scan Kamera
-  function startScanner() {
-    const readerElem = document.getElementById("reader");
-    readerElem.style.display = "block";
-
-    if (!html5Scanner) {
-      html5Scanner = new Html5Qrcode("reader");
+  // Memicu Scan Native WeCom jika dibuka di WeCom, atau ZXing HD Camera jika di browser
+  function handleScanRequest() {
+    if (typeof wx !== 'undefined' && wx.scanQRCode) {
+      // 1. Jalankan Native WeCom Scanner
+      wx.scanQRCode({
+        needResult: 1,
+        scanType: ["barCode", "qrCode"],
+        success: function (res) {
+          let result = res.resultStr;
+          if (result.includes(',')) result = result.split(',')[1]; // Clean Code128 prefix
+          document.getElementById('vinInput').value = result;
+        },
+        fail: function (err) {
+          startZXingScanner(); // Fallback jika WeCom JS-SDK tidak diizinkan admin
+        }
+      });
+    } else {
+      // 2. Fallback High-Resolution Camera Engine
+      startZXingScanner();
     }
+  }
 
-    html5Scanner.start(
-      { facingMode: "environment" },
-      barcodeConfig,
-      (decodedText) => {
-        document.getElementById("vinInput").value = decodedText;
-        stopScanner();
-      },
-      (errorMessage) => { /* scanning status */ }
-    ).catch(err => {
-      alert("Akses kamera gagal: " + err);
-      readerElem.style.display = "none";
+  function startZXingScanner() {
+    const container = document.getElementById('scanner-container');
+    container.style.display = 'block';
+
+    codeReader.decodeFromVideoDevice(undefined, 'videoPreview', (result, err) => {
+      if (result) {
+        document.getElementById('vinInput').value = result.getText();
+        stopZXingScanner();
+      }
+    }).catch(err => {
+      alert("Gagal membuka kamera. Pastikan izin kamera aktif: " + err);
+      container.style.display = 'none';
     });
   }
 
-  function stopScanner() {
-    if (html5Scanner) {
-      html5Scanner.stop().then(() => {
-        document.getElementById("reader").style.display = "none";
-      }).catch(err => console.error(err));
+  function stopZXingScanner() {
+    if (codeReader) {
+      codeReader.reset();
+      document.getElementById('scanner-container').style.display = 'none';
     }
   }
 
-  // Scan dari File Gambar / Galeri WeCom
+  // File Upload Barcode Scanner (ZXing Engine)
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
     const file = e.target.files[0];
+    const imgUrl = URL.createObjectURL(file);
 
-    if (!html5Scanner) {
-      html5Scanner = new Html5Qrcode("reader");
-    }
-
-    html5Scanner.scanFileV2(file, true)
+    codeReader.decodeFromImageUrl(imgUrl)
       .then(result => {
-        document.getElementById("vinInput").value = result.decodedText;
+        document.getElementById('vinInput').value = result.getText();
       })
       .catch(err => {
-        alert("Barcode tidak terbaca dari foto ini. Pastikan foto barcode jelas.");
+        alert("Barcode tidak terdeteksi. Pastikan foto cukup terang & tegak lurus.");
       });
   });
 
-  // Kirim Data ke Google Sheet
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
@@ -426,7 +431,6 @@
     .then(res => res.json())
     .then(response => {
       alert("Data berhasil tersimpan di Google Sheet!");
-      // Reset Form
       document.getElementById("vinInput").value = "";
       document.getElementById("carModel").value = "";
       document.getElementById("colour").value = "";
