@@ -2,213 +2,352 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Inspection & Sign Off Form</title>
-  <!-- HTML5 QR / Barcode Scanner Library -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Library Scan Barcode Terbaru (Optimized untuk WeCom & 1D Barcodes) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    body {
-      background-color: #121212;
-      color: #ffffff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 20px;
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --input-bg: #334155;
+      --accent-color: #38bdf8;
+      --accent-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
     .form-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #1e1e1e;
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--card-bg);
+      border-radius: 16px;
       padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      height: fit-content;
     }
-    h2 {
-      margin-top: 0;
-      border-bottom: 1px solid #333;
+
+    .form-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
       padding-bottom: 12px;
-      font-size: 1.4rem;
     }
+
+    .form-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+    }
+
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 20px;
     }
+
     label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #ccc;
-    }
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
       font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
-    .btn-green { background-color: #00a86b; }
-    .btn-purple { background-color: #8a2be2; }
-    .btn-submit { background-color: #2196F3; width: 100%; padding: 12px; font-size: 1rem; margin-top: 10px; }
-    
-    input[type="text"], textarea, select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #444;
-      border-radius: 6px;
-      background-color: #2a2a2a;
-      color: white;
-      box-sizing: border-box;
-      font-size: 0.95rem;
-    }
-    
-    /* Custom Checkbox Group (Multi Select Problem) */
-    .checkbox-group {
+
+    .btn-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      background: #2a2a2a;
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #444;
+      margin-bottom: 12px;
     }
-    .checkbox-item {
+
+    .btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-cyan {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #ffffff;
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #7e22ce, #a855f7);
+      color: #ffffff;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      padding: 14px;
+      font-size: 1rem;
+      border-radius: 10px;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent-color);
+    }
+
+    /* Modern Scrollable Multi-Select Box */
+    .scroll-select-box {
+      max-height: 140px;
+      overflow-y: auto;
+      background-color: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Custom Scrollbar */
+    .scroll-select-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-select-box::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+
+    .scroll-option {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .scroll-option:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .scroll-option input[type="checkbox"] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-color);
       cursor: pointer;
     }
-    .checkbox-item input {
-      accent-color: #8a2be2;
-      width: 16px;
-      height: 16px;
+
+    .scroll-option span {
+      font-size: 0.9rem;
+      color: var(--text-main);
     }
+
     #reader {
       width: 100%;
-      margin-bottom: 15px;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
+      margin-bottom: 12px;
       display: none;
+      border: 2px solid var(--accent-color);
     }
-    .note {
+
+    .hint-text {
       font-size: 0.75rem;
-      color: #888;
-      margin-top: 4px;
+      color: var(--text-muted);
+      margin-top: 6px;
     }
   </style>
 </head>
 <body>
 
 <div class="form-container">
-  <h2>Inspection & Sign Off Form</h2>
+  <div class="form-header">
+    <h2>Inspection & Sign Off Form</h2>
+  </div>
 
   <!-- VIN Section -->
   <div class="form-group">
     <label>VIN NO *</label>
-    <div class="btn-group">
-      <button type="button" class="btn btn-green" onclick="startScanner()">📷 Live Scan Kamera</button>
-      <button type="button" class="btn btn-purple" onclick="document.getElementById('qr-input-file').click()">📸 Foto Barcode / Galeri</button>
+    <div class="btn-grid">
+      <button type="button" class="btn btn-cyan" onclick="startScanner()">📷 Live Scan</button>
+      <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Unggah Gambar</button>
     </div>
-    <input type="file" id="qr-input-file" accept="image/*" style="display:none">
+    <input type="file" id="file-input" accept="image/*" style="display:none">
+    
     <div id="reader"></div>
-    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini" required>
-    <div class="note">*Gunakan "Foto Barcode" jika live kamera sulit fokus.</div>
+
+    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan terisi di sini..." required>
+    <div class="hint-text">*Gunakan 'Unggah Gambar' jika kamera WeCom sulit fokus pada barcode.</div>
   </div>
 
   <!-- Car Model -->
   <div class="form-group">
-    <label>CAR MODEL *</label>
+    <label>CAR MODEL</label>
     <input type="text" id="carModel" placeholder="Masukkan Car Model">
   </div>
 
   <!-- Colour -->
   <div class="form-group">
-    <label>COLOUR *</label>
-    <input type="text" id="colour" placeholder="Masukkan Warna">
+    <label>COLOUR</label>
+    <input type="text" id="colour" placeholder="Masukkan Warna Vehicle">
   </div>
 
-  <!-- Problem (Multi Select Checkbox) -->
+  <!-- Multi-Select Problem (Scrollable Box) -->
   <div class="form-group">
-    <label>PROBLEM * (Pilih satu atau lebih)</label>
-    <div class="checkbox-group">
-      <label class="checkbox-item"><input type="checkbox" name="problem" value="Electrical"> Electrical</label>
-      <label class="checkbox-item"><input type="checkbox" name="problem" value="Dent Issue"> Dent Issue</label>
-      <label class="checkbox-item"><input type="checkbox" name="problem" value="Repair"> Repair</label>
-      <label class="checkbox-item"><input type="checkbox" name="problem" value="Cripple"> Cripple</label>
+    <label>PROBLEM * (Multi-Select Scroll)</label>
+    <div class="scroll-select-box">
+      <label class="scroll-option">
+        <input type="checkbox" name="problem" value="Electrical">
+        <span>Electrical</span>
+      </label>
+      <label class="scroll-option">
+        <input type="checkbox" name="problem" value="Dent Issue">
+        <span>Dent Issue</span>
+      </label>
+      <label class="scroll-option">
+        <input type="checkbox" name="problem" value="Repair">
+        <span>Repair</span>
+      </label>
+      <label class="scroll-option">
+        <input type="checkbox" name="problem" value="Cripple">
+        <span>Cripple</span>
+      </label>
     </div>
   </div>
 
   <!-- Problem Description -->
   <div class="form-group">
     <label>PROBLEM DESCRIPTION</label>
-    <textarea id="problemDescription" rows="3" placeholder="Tuliskan deskripsi masalah secara manual..."></textarea>
+    <textarea id="problemDescription" rows="3" placeholder="Tuliskan detail deskripsi masalah di sini..."></textarea>
   </div>
 
-  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Kirim ke Google Sheet</button>
+  <button type="button" class="btn btn-submit" id="submitBtn" onclick="submitForm()">Kirim Data</button>
 </div>
 
 <script>
-  // GANTI SCRIPT_URL DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLK23qpH6PdS7LkRZx9H73I5K0oVPi-4jWaw4ZVE940npe21bRTGMJI6Inm45nH11uow/exec"; 
+  // SILAKAN MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLK23qpH6PdS7LkRZx9H73I5K0oVPi-4jWaw4ZVE940npe21bRTGMJI6Inm45nH11uow/exec";
 
-  let html5QrCode = new Html5Qrcode("reader");
+  let html5Scanner = null;
 
-  // Handler Scan dari Kamera Live
+  // Konfigurasi Scan Engine khusus Barcode 1D (Optimized WeCom Barcodes)
+  const barcodeConfig = {
+    fps: 15,
+    qrbox: { width: 280, height: 120 },
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.UPC_A
+    ]
+  };
+
+  // Live Scan Kamera
   function startScanner() {
-    document.getElementById("reader").style.display = "block";
-    html5QrCode.start(
+    const readerElem = document.getElementById("reader");
+    readerElem.style.display = "block";
+
+    if (!html5Scanner) {
+      html5Scanner = new Html5Qrcode("reader");
+    }
+
+    html5Scanner.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 150 } },
+      barcodeConfig,
       (decodedText) => {
-        onVinScanned(decodedText);
-        html5QrCode.stop();
-        document.getElementById("reader").style.display = "none";
+        document.getElementById("vinInput").value = decodedText;
+        stopScanner();
       },
-      (errorMessage) => { /* ignore errors */ }
-    ).catch(err => alert("Gagal membuka kamera: " + err));
+      (errorMessage) => { /* scanning status */ }
+    ).catch(err => {
+      alert("Akses kamera gagal: " + err);
+      readerElem.style.display = "none";
+    });
   }
 
-  // Handler Upload Foto Barcode dari Galeri
-  document.getElementById('qr-input-file').addEventListener('change', e => {
+  function stopScanner() {
+    if (html5Scanner) {
+      html5Scanner.stop().then(() => {
+        document.getElementById("reader").style.display = "none";
+      }).catch(err => console.error(err));
+    }
+  }
+
+  // Scan dari File Gambar / Galeri WeCom
+  document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
-    const imageFile = e.target.files[0];
-    html5QrCode.scanFile(imageFile, true)
-      .then(decodedText => {
-        onVinScanned(decodedText);
+    const file = e.target.files[0];
+
+    if (!html5Scanner) {
+      html5Scanner = new Html5Qrcode("reader");
+    }
+
+    html5Scanner.scanFileV2(file, true)
+      .then(result => {
+        document.getElementById("vinInput").value = result.decodedText;
       })
       .catch(err => {
-        alert("Barcode tidak terdeteksi dari gambar. Pastikan gambar jelas.");
+        alert("Barcode tidak terbaca dari foto ini. Pastikan gambar barcode cukup jelas/terang.");
       });
   });
 
-  // Jalankan ketika VIN berhasil discan
-  function onVinScanned(vin) {
-    document.getElementById("vinInput").value = vin;
-    // Panggilan opsional jika ingin melakukan auto-lookup ke database Sheet Master
-  }
-
-  // Submit Data Ke Google Sheets
+  // Kirim Data ke Google Sheet
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
     const colour = document.getElementById("colour").value;
     const problemDescription = document.getElementById("problemDescription").value;
 
-    // Ambil nilai problem yang dicentang
     const selectedProblems = [];
-    document.querySelectorAll('input[name="problem"]:checked').forEach((checkbox) => {
-      selectedProblems.push(checkbox.value);
+    document.querySelectorAll('input[name="problem"]:checked').forEach((cb) => {
+      selectedProblems.push(cb.value);
     });
 
     if (!vin) {
-      alert("Silakan isi/scan Nomor VIN terlebih dahulu!");
+      alert("Harap scan atau isi Nomor VIN terlebih dahulu!");
       return;
     }
 
@@ -230,7 +369,7 @@
     })
     .then(res => res.json())
     .then(response => {
-      alert("Data berhasil tersimpan ke Google Sheet!");
+      alert("Data berhasil tersimpan di Google Sheet!");
       // Reset Form
       document.getElementById("vinInput").value = "";
       document.getElementById("carModel").value = "";
@@ -239,11 +378,11 @@
       document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
     })
     .catch(error => {
-      alert("Gagal mengirim data. Pastikan URL Script benar.");
+      alert("Gagal mengirim data. Cek koneksi atau URL Apps Script Anda.");
       console.error(error);
     })
     .finally(() => {
-      btn.innerText = "Kirim ke Google Sheet";
+      btn.innerText = "Kirim Data";
       btn.disabled = false;
     });
   }
