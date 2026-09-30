@@ -270,13 +270,13 @@
     <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
   </div>
 
-  <!-- Car Model (Suhu Readonly Abu-abu secara default) -->
+  <!-- Car Model (Readonly Abu-abu) -->
   <div class="form-group">
     <label>Car Model <span class="cn">车型</span></label>
     <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
   </div>
 
-  <!-- Colour (Suhu Readonly Abu-abu secara default) -->
+  <!-- Colour (Readonly Abu-abu) -->
   <div class="form-group">
     <label>Colour <span class="cn">颜色</span></label>
     <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
@@ -315,8 +315,9 @@
 </div>
 
 <script>
-  // PASTAISKAN URL APPS SCRIPT ANDA SUDAH BENAR DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec"; 
+  // PASTAISKAN URL APPS SCRIPT ANDA SUDAH BENAR DI SINI (Termasuk /exec di ujungnya)
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec
+    "; 
   let isScanning = false;
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -325,7 +326,7 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   });
 
-  // Fungsi Auto Lookup ke Google Sheet saat VIN didapatkan
+  // Fungsi Auto Lookup ke Google Sheet (Diperbaiki dengan redirect & fallback)
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -334,23 +335,57 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          modelInput.value = data.carModel || "-";
-          colourInput.value = data.colour || "-";
-        } else {
-          modelInput.value = "-";
-          colourInput.value = "-";
-          alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini tidak ada di MASTER DATA.");
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        modelInput.value = "";
-        colourInput.value = "";
-      });
+    const targetUrl = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`;
+
+    fetch(targetUrl, {
+      method: "GET",
+      redirect: "follow"
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Network response error");
+      return res.json();
+    })
+    .then(data => {
+      if (data.status === "success") {
+        modelInput.value = data.carModel || "-";
+        colourInput.value = data.colour || "-";
+      } else {
+        modelInput.value = "Tidak Ditemukan";
+        colourInput.value = "Tidak Ditemukan";
+        alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini tidak terdaftar di tab MASTER DATA.");
+      }
+    })
+    .catch(err => {
+      console.error("Fetch direct gagal, mencoba JSONP fallback...", err);
+      fetchVinViaJSONP(vin);
+    });
+  }
+
+  // Fallback via Script Injection untuk menghindari blokir CORS di Safari/iOS
+  function fetchVinViaJSONP(vin) {
+    const modelInput = document.getElementById('carModel');
+    const colourInput = document.getElementById('colour');
+
+    window.handleVinResponse = function(data) {
+      if (data && data.status === "success") {
+        modelInput.value = data.carModel || "-";
+        colourInput.value = data.colour || "-";
+      } else {
+        modelInput.value = "Tidak Ditemukan";
+        colourInput.value = "Tidak Ditemukan";
+        alert("VIN terdeteksi: " + vin + "\nTetapi VIN tidak ada di MASTER DATA.");
+      }
+      delete window.handleVinResponse;
+    };
+
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=handleVinResponse`;
+    script.onerror = function() {
+      modelInput.value = "Error Koneksi";
+      colourInput.value = "Error Koneksi";
+      alert("Gagal terhubung ke Google Sheets. Pastikan 'Who has access' di Deploy Apps Script diatur ke 'Anyone'.");
+    };
+    document.body.appendChild(script);
   }
 
   function toggleScanner() {
@@ -412,7 +447,7 @@
     }
   }
 
-  // PENANGANAN UPLOAD FOTO BARCODE DENGAN RESIZING OTOMATIS
+  // Upload Foto Barcode dengan Auto Canvas Resizing
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
     const file = e.target.files[0];
@@ -421,7 +456,6 @@
     reader.onload = function(event) {
       const img = new Image();
       img.onload = function() {
-        // Resize gambar foto jika terlalu besar agar Quagga mampu membacanya
         const MAX_WIDTH = 1200;
         let width = img.width;
         let height = img.height;
@@ -438,9 +472,8 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
-        // Kirim gambar yang sudah di-resize ke Quagga
         Quagga.decodeSingle({
           src: resizedDataUrl,
           numOfWorkers: 0,
@@ -452,7 +485,7 @@
           if (result && result.codeResult && result.codeResult.code) {
             fetchVinDetails(result.codeResult.code);
           } else {
-            alert("Barcode tidak terbaca dari foto. Coba pastikan posisi foto mendatar dan fokus pada barcode.");
+            alert("Barcode tidak terbaca dari foto. Pastikan posisi barcode fokus dan jelas.");
           }
         });
       };
