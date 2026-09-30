@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
 
-  <!-- Library Scan Barcode/QR yang Paling Stabil untuk Mobile/iOS -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <!-- JS-SDK WeCom -->
-  <script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+  <!-- Quagga2: Engine Scanner Khusus Barcode 1D / Code 128 Kertas Fisik -->
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <style>
     :root {
@@ -200,14 +198,44 @@
       font-weight: 500;
     }
 
-    /* Container Scanner */
-    #reader {
+    /* Container Scanner Quagga */
+    #interactive.viewport {
+      position: relative;
       width: 100%;
+      height: 220px;
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 12px;
       display: none;
       border: 2px solid var(--btn-blue);
+      background-color: #000;
+    }
+
+    #interactive.viewport video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #interactive.viewport canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Panduan Garis Merah Pemindaian */
+    .scan-line {
+      position: absolute;
+      top: 50%;
+      left: 10%;
+      width: 80%;
+      height: 2px;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      z-index: 10;
+      pointer-events: none;
     }
 
     .hint-text {
@@ -240,16 +268,18 @@
   <div class="form-group">
     <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
     <div class="btn-grid">
-      <button type="button" class="btn btn-green" onclick="toggleLiveScan()">📷 Live Scan</button>
+      <button type="button" class="btn btn-green" onclick="toggleScanner()">📷 Live Scan</button>
       <button type="button" class="btn btn-purple" onclick="document.getElementById('file-input').click()">📁 Foto Barcode</button>
     </div>
     <input type="file" id="file-input" accept="image/*" style="display:none">
     
-    <!-- Video Scanner Region -->
-    <div id="reader"></div>
+    <!-- Viewport Scanner -->
+    <div id="interactive" class="viewport">
+      <div class="scan-line"></div>
+    </div>
 
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    <div class="hint-text">*Nomor VIN terisi otomatis melalui Live Scan atau Foto Barcode.</div>
+    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode kertas.</div>
   </div>
 
   <!-- Car Model -->
@@ -299,21 +329,15 @@
 
 <script>
   const SCRIPT_URL = "URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA";
-
-  let html5QrCode = null;
   let isScanning = false;
 
   window.addEventListener('DOMContentLoaded', () => {
     const now = new Date();
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-    // Inisialisasi Scanner Engine
-    html5QrCode = new Html5Qrcode("reader");
   });
 
-  // Toggle Kamera Live Scan
-  function toggleLiveScan() {
+  function toggleScanner() {
     if (isScanning) {
       stopScanner();
     } else {
@@ -322,61 +346,83 @@
   }
 
   function startScanner() {
-    const readerElement = document.getElementById('reader');
-    readerElement.style.display = 'block';
+    const viewport = document.getElementById('interactive');
+    viewport.style.display = 'block';
 
-    const config = {
-      fps: 15,
-      qrbox: { width: 280, height: 120 }, // Area scan persegi panjang khusus Barcode 1D / VIN
-      aspectRatio: 1.0,
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.QR_CODE
-      ]
-    };
-
-    html5QrCode.start(
-      { facingMode: "environment" }, // Paksa Kamera Belakang HP
-      config,
-      (decodedText) => {
-        document.getElementById('vinInput').value = decodedText;
-        stopScanner();
+    Quagga.init({
+      inputStream: {
+        name: "Live",
+        type: "LiveStream",
+        target: viewport,
+        constraints: {
+          width: { min: 1280, ideal: 1920 },
+          height: { min: 720, ideal: 1080 },
+          facingMode: "environment", // Paksa Kamera Belakang HP
+          focusMode: "continuous"
+        },
       },
-      (errorMessage) => {
-        // Logging error ringan jika barcode belum pas di area scan
+      locator: {
+        patchSize: "medium",
+        halfSample: false
+      },
+      numOfWorkers: 2,
+      decoder: {
+        readers: ["code_128_reader", "code_39_reader"] // Khusus Barcode Chassis/VIN Kertas
+      },
+      locate: true
+    }, function(err) {
+      if (err) {
+        alert("Gagal membuka kamera: " + err);
+        viewport.style.display = 'none';
+        return;
       }
-    ).then(() => {
+      Quagga.start();
       isScanning = true;
-    }).catch(err => {
-      alert("Izin kamera ditolak atau tidak didukung oleh browser ini: " + err);
-      readerElement.style.display = 'none';
-      isScanning = false;
     });
+
+    Quagga.onDetected(onBarcodeDetected);
   }
 
-  function stopScanner() {
-    if (html5QrCode && isScanning) {
-      html5QrCode.stop().then(() => {
-        document.getElementById('reader').style.display = 'none';
-        isScanning = false;
-      }).catch(err => console.error("Gagal menghentikan scanner: ", err));
+  function onBarcodeDetected(result) {
+    if (result && result.codeResult && result.codeResult.code) {
+      const code = result.codeResult.code;
+      // Validasi panjang VIN kendaraan (biasanya 17 karakter)
+      if (code.length >= 10) {
+        document.getElementById('vinInput').value = code;
+        stopScanner();
+      }
     }
   }
 
-  // Handle Scan dari Upload Foto Galeri
+  function stopScanner() {
+    if (isScanning) {
+      Quagga.stop();
+      Quagga.offDetected(onBarcodeDetected);
+      document.getElementById('interactive').style.display = 'none';
+      isScanning = false;
+    }
+  }
+
+  // Scan dari Foto Galeri menggunakan Engine Quagga
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const imgUrl = URL.createObjectURL(file);
 
-    const imageFile = e.target.files[0];
-
-    html5QrCode.scanFile(imageFile, true)
-      .then(decodedText => {
-        document.getElementById('vinInput').value = decodedText;
-      })
-      .catch(err => {
-        alert("Barcode tidak terbaca! Pastikan foto barcode terlihat jelas, tidak buram, dan tegak lurus.");
-      });
+    Quagga.decodeSingle({
+      src: imgUrl,
+      numOfWorkers: 0,
+      decoder: {
+        readers: ["code_128_reader", "code_39_reader"]
+      },
+      locate: true
+    }, function(result) {
+      if (result && result.codeResult) {
+        document.getElementById('vinInput').value = result.codeResult.code;
+      } else {
+        alert("Barcode tidak terbaca dari foto ini. Pastikan posisi barcode mendatar lurus dan pencahayaan terang.");
+      }
+    });
   });
 
   function submitForm() {
