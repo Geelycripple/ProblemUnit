@@ -107,6 +107,7 @@
       transition: all 0.2s ease-in-out;
     }
 
+    /* Style untuk status READONLY (Abu-abu ter-lock) */
     input[readonly] {
       background-color: var(--input-readonly) !important;
       color: #475569 !important;
@@ -269,16 +270,16 @@
     <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
   </div>
 
-  <!-- Car Model -->
+  <!-- Car Model (Suhu Readonly Abu-abu secara default) -->
   <div class="form-group">
     <label>Car Model <span class="cn">车型</span></label>
-    <input type="text" id="carModel" placeholder="Akan terisi otomatis...">
+    <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
   </div>
 
-  <!-- Colour -->
+  <!-- Colour (Suhu Readonly Abu-abu secara default) -->
   <div class="form-group">
     <label>Colour <span class="cn">颜色</span></label>
-    <input type="text" id="colour" placeholder="Akan terisi otomatis...">
+    <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
   </div>
 
   <!-- Multi-Select Problem -->
@@ -315,7 +316,7 @@
 
 <script>
   // PASTAISKAN URL APPS SCRIPT ANDA SUDAH BENAR DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx.../exec"; 
   let isScanning = false;
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -333,37 +334,22 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    // Reset status readonly saat proses pencarian
-    modelInput.readOnly = false;
-    colourInput.readOnly = false;
-
     fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`)
       .then(res => res.json())
       .then(data => {
         if (data.status === "success") {
           modelInput.value = data.carModel || "-";
           colourInput.value = data.colour || "-";
-
-          // Kunci kolom menjadi READ ONLY jika data VIN berhasil ditemukan di MASTER DATA
-          modelInput.readOnly = true;
-          colourInput.readOnly = true;
         } else {
-          modelInput.value = "";
-          colourInput.value = "";
-
-          // Biarkan tetap dapat diisi manual jika VIN tidak terdaftar
-          modelInput.readOnly = false;
-          colourInput.readOnly = false;
-
-          alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini belum ada di tab MASTER DATA.");
+          modelInput.value = "-";
+          colourInput.value = "-";
+          alert("VIN terdeteksi: " + vin + "\nTetapi VIN ini tidak ada di MASTER DATA.");
         }
       })
       .catch(err => {
         console.error(err);
         modelInput.value = "";
         colourInput.value = "";
-        modelInput.readOnly = false;
-        colourInput.readOnly = false;
       });
   }
 
@@ -392,7 +378,7 @@
       },
       locator: { patchSize: "medium", halfSample: false },
       numOfWorkers: 2,
-      decoder: { readers: ["code_128_reader", "code_39_reader"] },
+      decoder: { readers: ["code_128_reader", "code_39_reader", "code_93_reader"] },
       locate: true
     }, function(err) {
       if (err) {
@@ -426,23 +412,53 @@
     }
   }
 
+  // PENANGANAN UPLOAD FOTO BARCODE DENGAN RESIZING OTOMATIS
   document.getElementById('file-input').addEventListener('change', e => {
     if (e.target.files.length === 0) return;
     const file = e.target.files[0];
-    const imgUrl = URL.createObjectURL(file);
 
-    Quagga.decodeSingle({
-      src: imgUrl,
-      numOfWorkers: 0,
-      decoder: { readers: ["code_128_reader", "code_39_reader"] },
-      locate: true
-    }, function(result) {
-      if (result && result.codeResult) {
-        fetchVinDetails(result.codeResult.code);
-      } else {
-        alert("Barcode tidak terbaca dari foto ini. Coba foto ulang lebih jelas & mendatar.");
-      }
-    });
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        // Resize gambar foto jika terlalu besar agar Quagga mampu membacanya
+        const MAX_WIDTH = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+        // Kirim gambar yang sudah di-resize ke Quagga
+        Quagga.decodeSingle({
+          src: resizedDataUrl,
+          numOfWorkers: 0,
+          decoder: { 
+            readers: ["code_128_reader", "code_39_reader", "code_93_reader"] 
+          },
+          locate: true
+        }, function(result) {
+          if (result && result.codeResult && result.codeResult.code) {
+            fetchVinDetails(result.codeResult.code);
+          } else {
+            alert("Barcode tidak terbaca dari foto. Coba pastikan posisi foto mendatar dan fokus pada barcode.");
+          }
+        });
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   });
 
   function submitForm() {
@@ -485,10 +501,6 @@
       document.getElementById("colour").value = "";
       document.getElementById("problemDescription").value = "";
       document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
-
-      // Kembalikan atribut input ke semula setelah submit
-      document.getElementById("carModel").readOnly = false;
-      document.getElementById("colour").readOnly = false;
     })
     .catch(error => {
       alert("Gagal mengirim data. Cek koneksi Anda.");
