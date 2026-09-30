@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
 
-  <!-- Library Quagga2 -->
+  <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <style>
@@ -20,7 +20,6 @@
       --text-label: #334155;
       --text-muted: #64748b;
       --btn-green: #10b981;
-      --btn-purple: #8b5cf6;
       --btn-blue: #2563eb;
       --radius: 12px;
     }
@@ -107,7 +106,7 @@
       transition: all 0.2s ease-in-out;
     }
 
-    /* Style Readonly khusus agar tampil abu-abu */
+    /* Style Readonly Abu-abu Ter-lock */
     input[readonly] {
       background-color: var(--input-readonly) !important;
       color: #475569 !important;
@@ -120,19 +119,13 @@
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
 
-    .btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
     .btn {
-      padding: 12px 14px;
+      width: 100%;
+      padding: 14px;
       border: none;
       border-radius: var(--radius);
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -140,13 +133,12 @@
       justify-content: center;
       gap: 6px;
       color: #ffffff;
+      margin-bottom: 10px;
     }
 
     .btn-green { background-color: var(--btn-green); }
-    .btn-purple { background-color: var(--btn-purple); }
 
     .btn-submit {
-      width: 100%;
       background-color: var(--btn-blue);
       color: #ffffff;
       padding: 14px;
@@ -198,10 +190,11 @@
       font-weight: 500;
     }
 
+    /* Kotak Kamera Luas dan Penuh tanpa Batas Pemotongan */
     #interactive.viewport {
       position: relative;
       width: 100%;
-      height: 220px;
+      height: 280px;
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 12px;
@@ -219,8 +212,8 @@
     .scan-line {
       position: absolute;
       top: 50%;
-      left: 10%;
-      width: 80%;
+      left: 5%;
+      width: 90%;
       height: 2px;
       background: #ef4444;
       box-shadow: 0 0 8px #ef4444;
@@ -256,18 +249,14 @@
   <!-- VIN Section -->
   <div class="form-group">
     <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
-    <div class="btn-grid">
-      <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan</button>
-      <button type="button" class="btn btn-purple" id="btnUploadFoto">📁 Foto Barcode</button>
-    </div>
-    <input type="file" id="file-input" accept="image/*" style="display:none">
+    <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan Barcode</button>
     
     <div id="interactive" class="viewport">
       <div class="scan-line"></div>
     </div>
 
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
+    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode PT HANDAL INDONESIA MOTOR.</div>
   </div>
 
   <!-- Car Model -->
@@ -315,21 +304,14 @@
 </div>
 
 <script>
-  // MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
+  // PASTAISKAN MASUKKAN URL GOOGLE APPS SCRIPT ANDA DI SINI
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbYVVflhi692yWt-z8vZqwm-Mj-fd5Fiku5lw0JqcTSiNfjEvZboeHBtnIvQwoGXFbBA/exec"; 
   let isScanning = false;
 
-  // Inisialisasi Tanggal dan Event Listener saat halaman terbuka
   document.addEventListener("DOMContentLoaded", function() {
     updateDateTime();
-    
-    // Bind tombol agar aman di iOS/Safari
     document.getElementById("btnLiveScan").addEventListener("click", toggleScanner);
-    document.getElementById("btnUploadFoto").addEventListener("click", function() {
-      document.getElementById("file-input").click();
-    });
     document.getElementById("submitBtn").addEventListener("click", submitForm);
-    document.getElementById("file-input").addEventListener("change", handleFileUpload);
   });
 
   function updateDateTime() {
@@ -338,7 +320,7 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  // Auto Lookup ke Master Data Google Sheets
+  // Auto Lookup ke Google Sheets
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -348,7 +330,7 @@
     colourInput.value = "Mencari...";
 
     if (!SCRIPT_URL || SCRIPT_URL.includes("URL_WEB_APP_GOOGLE_APPS_SCRIPT_ANDA")) {
-      alert("URL Web App Google Apps Script belum dipasang pada kode!");
+      alert("URL Web App Google Apps Script belum dipasang!");
       modelInput.value = "-";
       colourInput.value = "-";
       return;
@@ -357,7 +339,6 @@
     fetchViaJSONP(vin);
   }
 
-  // Menggunakan JSONP untuk menghindari CORS Block di iPhone / GitHub Pages
   function fetchViaJSONP(vin) {
     const modelInput = document.getElementById('carModel');
     const colourInput = document.getElementById('colour');
@@ -371,7 +352,7 @@
       } else {
         modelInput.value = "Tidak Ditemukan";
         colourInput.value = "Tidak Ditemukan";
-        alert("VIN: " + vin + " tidak ada di tab MASTER DATA.");
+        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
       }
       delete window[callbackName];
       const elem = document.getElementById(callbackName);
@@ -391,7 +372,7 @@
     document.body.appendChild(script);
   }
 
-  // Fungsi Kamera Live Scan
+  // Kamera Live Scan Ringan & Lancar
   function toggleScanner() {
     if (isScanning) {
       stopScanner();
@@ -405,7 +386,7 @@
     viewport.style.display = 'block';
 
     if (typeof Quagga === "undefined") {
-      alert("Library Scanner belum siap, periksa koneksi internet Anda.");
+      alert("Library Scanner belum siap. Cek koneksi internet Anda.");
       return;
     }
 
@@ -415,18 +396,23 @@
         type: "LiveStream",
         target: viewport,
         constraints: {
-          width: { min: 640, ideal: 1280 },
-          height: { min: 480, ideal: 720 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           facingMode: "environment"
         },
       },
-      locator: { patchSize: "medium", halfSample: false },
-      numOfWorkers: 2,
-      decoder: { readers: ["code_128_reader", "code_39_reader", "code_93_reader"] },
+      locator: { 
+        patchSize: "large", // Dibuat large agar barcode panjang seperti PT Handal mudah tertangkap
+        halfSample: true    // Mempercepat kinerja dan menghilangkan lag
+      },
+      numOfWorkers: 1,      // Mengurangi beban CPU HP agar tidak patah-patah/lag
+      decoder: { 
+        readers: ["code_128_reader", "code_39_reader"] 
+      },
       locate: true
     }, function(err) {
       if (err) {
-        alert("Akses kamera gagal/ditolak: " + err);
+        alert("Akses kamera gagal: " + err);
         viewport.style.display = 'none';
         return;
       }
@@ -440,7 +426,8 @@
   function onBarcodeDetected(result) {
     if (result && result.codeResult && result.codeResult.code) {
       const code = result.codeResult.code;
-      if (code.length >= 8) {
+      // Memastikan pembacaan VIN valid (minimal 10 karakter)
+      if (code.length >= 10) {
         stopScanner();
         fetchVinDetails(code);
       }
@@ -456,51 +443,7 @@
     }
   }
 
-  // Handling Upload Foto Barcode
-  function handleFileUpload(e) {
-    if (e.target.files.length === 0) return;
-    const file = e.target.files[0];
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const img = new Image();
-      img.onload = function() {
-        const MAX_WIDTH = 1000;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > MAX_WIDTH) {
-          height = Math.round((height * MAX_WIDTH) / width);
-          width = MAX_WIDTH;
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-        Quagga.decodeSingle({
-          src: resizedDataUrl,
-          numOfWorkers: 0,
-          decoder: { readers: ["code_128_reader", "code_39_reader", "code_93_reader"] },
-          locate: true
-        }, function(result) {
-          if (result && result.codeResult && result.codeResult.code) {
-            fetchVinDetails(result.codeResult.code);
-          } else {
-            alert("Barcode tidak terbaca dari foto. Pastikan foto jelas dan tidak buram.");
-          }
-        });
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  // Submit Data
+  // Submit Form Data
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
@@ -513,7 +456,7 @@
     });
 
     if (!vin) {
-      alert("Harap scan atau upload foto barcode VIN terlebih dahulu!");
+      alert("Harap scan barcode VIN terlebih dahulu!");
       return;
     }
 
