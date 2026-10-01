@@ -235,31 +235,56 @@
       margin-top: 6px;
     }
 
-    /* TAMPILAN SUKSES ELEGAN (SUCCESS SCREEN) */
-    .success-screen {
+    /* OVERLAY MODAL SUKSES (PAS DI TENGAH LAYAR HP) */
+    .success-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       display: none;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+
+    /* KOTAK MODAL SUKSES */
+    .success-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 24px;
+      padding: 36px 24px 28px 24px;
       text-align: center;
-      padding: 50px 10px 30px 10px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     .check-icon-circle {
-      width: 110px; /* Ukuran diperbesar */
-      height: 110px;
+      width: 100px;
+      height: 100px;
       background-color: #dcfce7;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.2);
+      margin: 0 auto 20px auto;
+      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.18);
     }
 
     .check-icon-circle svg {
-      width: 64px; /* Icon diperbesar */
-      height: 64px;
+      width: 58px;
+      height: 58px;
       stroke: #16a34a;
       stroke-width: 3.5;
       stroke-linecap: round;
@@ -267,19 +292,29 @@
       fill: none;
     }
 
-    .success-title {
-      font-size: 1.35rem;
-      font-weight: 700;
+    /* BARIS 1: NO VIN (HIJAU) */
+    .success-vin {
       color: #15803d;
-      margin-bottom: 8px;
-      word-break: break-word;
-      padding: 0 10px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      word-break: break-all;
     }
 
+    /* BARIS 2: BERHASIL TERDATA (HIJAU) */
+    .success-title {
+      color: #15803d;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+
+    /* BARIS 3: SUBTITLE (ABU-ABU) */
     .success-subtitle {
-      font-size: 0.95rem;
       color: #64748b;
-      margin-bottom: 36px;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+      line-height: 1.4;
     }
 
     .btn-new-report {
@@ -290,9 +325,9 @@
       border: none;
       border-radius: 12px;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.2);
+      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.25);
     }
 
     .btn-new-report:active {
@@ -304,7 +339,7 @@
 
 <div class="form-container">
   <!-- FORM UTAMA -->
-  <div id="formContent">
+  <form id="unitForm" onsubmit="return false;">
     <div class="form-header">
       <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
     </div>
@@ -402,25 +437,34 @@
     </div>
 
     <button type="button" class="btn btn-submit" id="submitBtn">Submit Data 提交</button>
-  </div>
+  </form>
+</div>
 
-  <!-- TAMPILAN NOTIFIKASI SUKSES -->
-  <div id="successScreen" class="success-screen">
+<!-- MODAL POPUP SUKSES (SIT IN CENTER) -->
+<div id="successModal" class="success-modal-overlay">
+  <div class="success-card">
     <div class="check-icon-circle">
       <svg viewBox="0 0 24 24">
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>
     </div>
     
-    <div class="success-title" id="successMsg">VIN berhasil submitted</div>
-    <div class="success-subtitle">提交成功！数据已更新到 Google Sheets</div>
+    <!-- 1. NOMOR VIN (HIJAU) -->
+    <div class="success-vin" id="successVinNo">MGEEH40FXTJ013701</div>
+
+    <!-- 2. BERHASIL TERDATA (HIJAU) -->
+    <div class="success-title">BERHASIL TERDATA</div>
+
+    <!-- 3. SUBTITLE (ABU-ABU) -->
+    <div class="success-subtitle">Report Anda Sudah Masuk ke Google Sheet</div>
 
     <button type="button" class="btn-new-report" id="btnNewReport">+ New Unit Report 新建报告</button>
   </div>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRCa47Vy2QUdgMDuCktWAT2_3ycpmSQ6J23xYKQtfiKs7qScqBq9sdkMJgHt69W9zXxg/exec"; 
+  // PASTI-KAN URL GOOGLE APPS SCRIPT BERAKHIRAN /exec
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDlHT_6ZulS1yLguSO83BA2-HBpSPTTse7tphZI4oPZTJZZsHHIQIAYMhwrM85Owxigg/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -436,7 +480,7 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  // Lookup VIN Menggunakan JSONP
+  // Lookup VIN Menggunakan JSONP (Kebal CORS Safari iOS)
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -592,12 +636,14 @@
       body: formData.toString()
     })
     .then(() => {
-      // Set pesan sukses secara dinamis sesuai VIN yang dikirim
-      document.getElementById("successMsg").innerText = vin + " berhasil submitted";
+      // Set nomor VIN di modal
+      document.getElementById("successVinNo").innerText = vin;
 
-      // Sembunyikan Form & Tampilkan Layar Sukses Elegan
-      document.getElementById("formContent").style.display = "none";
-      document.getElementById("successScreen").style.display = "flex";
+      // Scroll halus ke paling atas agar modal langsung fokus di tengah
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Tampilkan Overlay Modal
+      document.getElementById("successModal").style.display = "flex";
     })
     .catch(error => {
       alert("Gagal mengirim data.");
@@ -611,6 +657,7 @@
 
   // Reset ke Form Baru
   function resetToNewReport() {
+    document.getElementById("unitForm").reset();
     document.getElementById("vinInput").value = "";
     document.getElementById("carModel").value = "";
     document.getElementById("colour").value = "";
@@ -620,9 +667,11 @@
 
     updateDateTime();
 
-    // Sembunyikan Layar Sukses & Tampilkan Form Lagi
-    document.getElementById("successScreen").style.display = "none";
-    document.getElementById("formContent").style.display = "block";
+    // Sembunyikan Modal Popup
+    document.getElementById("successModal").style.display = "none";
+
+    // Scroll halus ke atas form
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 </script>
 
