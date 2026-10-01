@@ -163,7 +163,7 @@
     }
 
     .scroll-select-box {
-      max-height: 140px;
+      max-height: 160px;
       overflow-y: auto;
       background-color: #f8fafc;
       border: 1px solid var(--input-border);
@@ -263,7 +263,7 @@
     </div>
 
     <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode PT HANDAL INDONESIA MOTOR.</div>
+    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
   </div>
 
   <!-- Car Model -->
@@ -278,14 +278,14 @@
     <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
   </div>
 
-  <!-- Last Station (Single Select) -->
+  <!-- Last Station -->
   <div class="form-group">
     <label>Last Station <span class="cn">末端工位</span><span class="req">*</span></label>
     <select id="lastStation" required>
       <option value="" disabled selected>Pilih Last Station... / 请选择</option>
-      <option value="In Testline">IN TESTLINE</option>
-      <option value="Inspection">INSPECTION</option>
-      <option value="Sign Off">SIGN OFF</option>
+      <option value="In Testline">1. In Testline</option>
+      <option value="Inspection">2. Inspection</option>
+      <option value="Sign Off">3. Sign Off</option>
     </select>
   </div>
 
@@ -293,7 +293,6 @@
   <div class="form-group">
     <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
     <div class="scroll-select-box">
-      <!-- Opsi Baru: PROBLEM DONE -->
       <label class="scroll-option" style="background-color: #ecfdf5; border-color: #a7f3d0;">
         <input type="checkbox" name="problem" value="PROBLEM DONE">
         <span style="color: #059669; font-weight: 700;">✅ PROBLEM DONE 修复完成</span>
@@ -339,8 +338,8 @@
 </div>
 
 <script>
-  // TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAH7Zchp0r2fR5WbpNljrO1SVuxvPeGvG8dZrld5WR6775cM0X20JUVQpUMSKCo36-xg/exec"; 
+  // PASTI-KAN URL WEB APP ANDA BENAR DI SINI (Berakhiran /exec)
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-Zs7fqaf7OsNyJ_ri-dTiK8niarcymUh1PTFJ9o37HxpQMRYQvgsLJbB4fXEgGyphkQ/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -355,8 +354,7 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  // Lookup data menggunakan Fetch API yang stabil
-  // Lookup data menggunakan metode JSONP (Tembus Safari iOS / GitHub Pages)
+  // Lookup VIN Menggunakan JSONP (Paling Stabil di iOS/Safari)
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -365,10 +363,8 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    // Nama callback unik
-    const callbackName = "handleVinResult_" + Math.floor(Math.random() * 100000);
+    const callbackName = "cb_" + Math.floor(Math.random() * 1000000);
 
-    // Buat fungsi callback global sementara
     window[callbackName] = function(data) {
       if (data && data.status === "success") {
         modelInput.value = data.carModel || "-";
@@ -378,27 +374,29 @@
         colourInput.value = "Tidak Ditemukan";
         alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
       }
-
-      // Bersihkan script setelah dipanggil
-      document.body.removeChild(script);
-      delete window[callbackName];
+      cleanup();
     };
 
-    // Buat tag script untuk panggil Google Apps Script
+    function cleanup() {
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      delete window[callbackName];
+    }
+
     const script = document.createElement('script');
     script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=${callbackName}`;
     script.onerror = function() {
       modelInput.value = "Gagal Akses";
       colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets. Pastikan deployment Apps Script sudah versi terbaru.");
-      document.body.removeChild(script);
-      delete window[callbackName];
+      alert("Gagal terhubung ke Google Sheets. Cek apakah URL Apps Script sudah benar.");
+      cleanup();
     };
 
     document.body.appendChild(script);
   }
-  
-  // Kamera Live Scan
+
+  // Scanner Kamera
   function toggleScanner() {
     if (isScanning) {
       stopScanner();
@@ -412,7 +410,7 @@
     viewport.style.display = 'block';
 
     if (typeof Quagga === "undefined") {
-      alert("Library Scanner belum siap. Cek koneksi internet Anda.");
+      alert("Library Scanner belum siap. Cek koneksi internet.");
       return;
     }
 
@@ -427,18 +425,13 @@
           facingMode: "environment"
         },
       },
-      locator: { 
-        patchSize: "large",
-        halfSample: true
-      },
+      locator: { patchSize: "large", halfSample: true },
       numOfWorkers: 1,
-      decoder: { 
-        readers: ["code_128_reader", "code_39_reader"] 
-      },
+      decoder: { readers: ["code_128_reader", "code_39_reader"] },
       locate: true
     }, function(err) {
       if (err) {
-        alert("Akses kamera gagal: " + err);
+        alert("Kamera gagal diakses: " + err);
         viewport.style.display = 'none';
         return;
       }
@@ -468,7 +461,7 @@
     }
   }
 
-  // Submit Form Data ke Google Sheet
+  // Submit Form
   function submitForm() {
     const vin = document.getElementById("vinInput").value;
     const carModel = document.getElementById("carModel").value;
@@ -500,20 +493,21 @@
     btn.innerText = "Submitting... 提交中";
     btn.disabled = true;
 
-    const payload = {
-      vin: vin,
-      carModel: carModel,
-      colour: colour,
-      lastStation: lastStation,
-      problem: selectedProblems,
-      problemDescription: problemDescription
-    };
+    const formData = new URLSearchParams();
+    formData.append("vin", vin);
+    formData.append("carModel", carModel);
+    formData.append("colour", colour);
+    formData.append("lastStation", lastStation);
+    formData.append("problem", selectedProblems.join(", "));
+    formData.append("problemDescription", problemDescription);
 
     fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: formData.toString()
     })
     .then(() => {
       alert("Data berhasil terkirim ke Google Sheets!");
