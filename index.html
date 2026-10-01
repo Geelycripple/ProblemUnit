@@ -20,7 +20,7 @@
       --text-label: #334155;
       --text-muted: #64748b;
       --btn-green: #10b981;
-      --btn-blue: #2563eb;
+      --btn-blue: #1d62cd;
       --radius: 12px;
     }
 
@@ -50,6 +50,7 @@
       padding: 24px 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       border: 1px solid #e2e8f0;
+      position: relative;
     }
 
     .form-header {
@@ -154,7 +155,7 @@
       font-weight: 700;
       border-radius: var(--radius);
       margin-top: 12px;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.25);
     }
 
     .btn:active {
@@ -233,119 +234,200 @@
       color: var(--text-muted);
       margin-top: 6px;
     }
+
+    /* TAMPILAN SUKSES ELEGAN (SUCCESS SCREEN) */
+    .success-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 50px 10px 30px 10px;
+    }
+
+    .check-icon-circle {
+      width: 110px; /* Ukuran diperbesar */
+      height: 110px;
+      background-color: #dcfce7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.2);
+    }
+
+    .check-icon-circle svg {
+      width: 64px; /* Icon diperbesar */
+      height: 64px;
+      stroke: #16a34a;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .success-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #15803d;
+      margin-bottom: 8px;
+      word-break: break-word;
+      padding: 0 10px;
+    }
+
+    .success-subtitle {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 36px;
+    }
+
+    .btn-new-report {
+      width: 100%;
+      padding: 14px;
+      background-color: #1d62cd;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.2);
+    }
+
+    .btn-new-report:active {
+      transform: scale(0.98);
+    }
   </style>
 </head>
 <body>
 
 <div class="form-container">
-  <div class="form-header">
-    <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
+  <!-- FORM UTAMA -->
+  <div id="formContent">
+    <div class="form-header">
+      <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
+    </div>
+
+    <div class="form-group form-group-row">
+      <div>
+        <label>Date <span class="cn">日期</span><span class="req">*</span></label>
+        <input type="text" id="dateInput" readonly>
+      </div>
+      <div>
+        <label>Time <span class="cn">时间</span><span class="req">*</span></label>
+        <input type="text" id="timeInput" readonly>
+      </div>
+    </div>
+
+    <!-- VIN Section -->
+    <div class="form-group">
+      <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
+      <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan Barcode</button>
+      
+      <div id="interactive" class="viewport">
+        <div class="scan-line"></div>
+      </div>
+
+      <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
+      <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
+    </div>
+
+    <!-- Car Model -->
+    <div class="form-group">
+      <label>Car Model <span class="cn">车型</span></label>
+      <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
+    </div>
+
+    <!-- Colour -->
+    <div class="form-group">
+      <label>Colour <span class="cn">颜色</span></label>
+      <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
+    </div>
+
+    <!-- Last Station -->
+    <div class="form-group">
+      <label>Last Station <span class="cn">末端工位</span><span class="req">*</span></label>
+      <select id="lastStation" required>
+        <option value="" disabled selected>Pilih Last Station... / 请选择</option>
+        <option value="In Testline">1. In Testline</option>
+        <option value="Inspection">2. Inspection</option>
+        <option value="Sign Off">3. Sign Off</option>
+      </select>
+    </div>
+
+    <!-- Multi-Select Problem -->
+    <div class="form-group">
+      <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
+      <div class="scroll-select-box">
+        <label class="scroll-option" style="background-color: #ecfdf5; border-color: #a7f3d0;">
+          <input type="checkbox" name="problem" value="PROBLEM DONE">
+          <span style="color: #059669; font-weight: 700;">✅ PROBLEM DONE 修复完成</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Electrical">
+          <span>Electrical 电气问题</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Dent Issue">
+          <span>Dent Issue 凹陷/外观</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Repair">
+          <span>Repair 维修</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Change Part">
+          <span>Change Part 更换零部件</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Painting">
+          <span>Painting 喷漆/油漆</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="Noise">
+          <span>Noise 异响/噪音</span>
+        </label>
+        <label class="scroll-option">
+          <input type="checkbox" name="problem" value="OTHER">
+          <span>OTHER 其他</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Problem Description -->
+    <div class="form-group">
+      <label>Problem Description <span class="cn">问题详细描述</span></label>
+      <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
+    </div>
+
+    <button type="button" class="btn btn-submit" id="submitBtn">Submit Data 提交</button>
   </div>
 
-  <div class="form-group form-group-row">
-    <div>
-      <label>Date <span class="cn">日期</span><span class="req">*</span></label>
-      <input type="text" id="dateInput" readonly>
+  <!-- TAMPILAN NOTIFIKASI SUKSES -->
+  <div id="successScreen" class="success-screen">
+    <div class="check-icon-circle">
+      <svg viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
     </div>
-    <div>
-      <label>Time <span class="cn">时间</span><span class="req">*</span></label>
-      <input type="text" id="timeInput" readonly>
-    </div>
-  </div>
-
-  <!-- VIN Section -->
-  <div class="form-group">
-    <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
-    <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan Barcode</button>
     
-    <div id="interactive" class="viewport">
-      <div class="scan-line"></div>
-    </div>
+    <div class="success-title" id="successMsg">VIN berhasil submitted</div>
+    <div class="success-subtitle">提交成功！数据已更新到 Google Sheets</div>
 
-    <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
+    <button type="button" class="btn-new-report" id="btnNewReport">+ New Unit Report 新建报告</button>
   </div>
-
-  <!-- Car Model -->
-  <div class="form-group">
-    <label>Car Model <span class="cn">车型</span></label>
-    <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
-  </div>
-
-  <!-- Colour -->
-  <div class="form-group">
-    <label>Colour <span class="cn">颜色</span></label>
-    <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
-  </div>
-
-  <!-- Last Station -->
-  <div class="form-group">
-    <label>Last Station <span class="cn">末端工位</span><span class="req">*</span></label>
-    <select id="lastStation" required>
-      <option value="" disabled selected>Pilih Last Station... / 请选择</option>
-      <option value="In Testline">1. In Testline</option>
-      <option value="Inspection">2. Inspection</option>
-      <option value="Sign Off">3. Sign Off</option>
-    </select>
-  </div>
-
-  <!-- Multi-Select Problem -->
-  <div class="form-group">
-    <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
-    <div class="scroll-select-box">
-      <label class="scroll-option" style="background-color: #ecfdf5; border-color: #a7f3d0;">
-        <input type="checkbox" name="problem" value="PROBLEM DONE">
-        <span style="color: #059669; font-weight: 700;">✅ PROBLEM DONE 修复完成</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Electrical">
-        <span>Electrical 电气问题</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Dent Issue">
-        <span>Dent Issue 凹陷/外观</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Repair">
-        <span>Repair 维修</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Change Part">
-        <span>Change Part 更换零部件</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Painting">
-        <span>Painting 喷漆/油漆</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="Noise">
-        <span>Noise 异响/噪音</span>
-      </label>
-      <label class="scroll-option">
-        <input type="checkbox" name="problem" value="OTHER">
-        <span>OTHER 其他</span>
-      </label>
-    </div>
-  </div>
-
-  <!-- Problem Description -->
-  <div class="form-group">
-    <label>Problem Description <span class="cn">问题详细描述</span></label>
-    <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
-  </div>
-
-  <button type="button" class="btn btn-submit" id="submitBtn">Submit Data 提交</button>
 </div>
 
 <script>
-  // PASTI-KAN URL WEB APP ANDA BENAR DI SINI (Berakhiran /exec)
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-Zs7fqaf7OsNyJ_ri-dTiK8niarcymUh1PTFJ9o37HxpQMRYQvgsLJbB4fXEgGyphkQ/exec"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwB4FFvCAyN4GnChhbnD_0NW85G7GWlpDrRkjLvitxKc_PXhqiDPfV-zZ_r4JzSahF_9Q/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
     updateDateTime();
     document.getElementById("btnLiveScan").addEventListener("click", toggleScanner);
     document.getElementById("submitBtn").addEventListener("click", submitForm);
+    document.getElementById("btnNewReport").addEventListener("click", resetToNewReport);
   });
 
   function updateDateTime() {
@@ -354,7 +436,7 @@
     document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  // Lookup VIN Menggunakan JSONP (Paling Stabil di iOS/Safari)
+  // Lookup VIN Menggunakan JSONP
   function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
@@ -389,7 +471,7 @@
     script.onerror = function() {
       modelInput.value = "Gagal Akses";
       colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets. Cek apakah URL Apps Script sudah benar.");
+      alert("Gagal terhubung ke Google Sheets. Cek URL Apps Script.");
       cleanup();
     };
 
@@ -510,13 +592,12 @@
       body: formData.toString()
     })
     .then(() => {
-      alert("Data berhasil terkirim ke Google Sheets!");
-      document.getElementById("vinInput").value = "";
-      document.getElementById("carModel").value = "";
-      document.getElementById("colour").value = "";
-      document.getElementById("lastStation").value = "";
-      document.getElementById("problemDescription").value = "";
-      document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
+      // Set pesan sukses secara dinamis sesuai VIN yang dikirim
+      document.getElementById("successMsg").innerText = vin + " berhasil submitted";
+
+      // Sembunyikan Form & Tampilkan Layar Sukses Elegan
+      document.getElementById("formContent").style.display = "none";
+      document.getElementById("successScreen").style.display = "flex";
     })
     .catch(error => {
       alert("Gagal mengirim data.");
@@ -526,6 +607,22 @@
       btn.innerText = "Submit Data 提交";
       btn.disabled = false;
     });
+  }
+
+  // Reset ke Form Baru
+  function resetToNewReport() {
+    document.getElementById("vinInput").value = "";
+    document.getElementById("carModel").value = "";
+    document.getElementById("colour").value = "";
+    document.getElementById("lastStation").value = "";
+    document.getElementById("problemDescription").value = "";
+    document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
+
+    updateDateTime();
+
+    // Sembunyikan Layar Sukses & Tampilkan Form Lagi
+    document.getElementById("successScreen").style.display = "none";
+    document.getElementById("formContent").style.display = "block";
   }
 </script>
 
