@@ -340,7 +340,7 @@
 
 <script>
   // TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzRkHVf1hETnqhfA_j1z4QfGLOs7yQdj_FOZE8Mv7INm1xJVTz2VoevuP2hdOyWhMSwQ/exec"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLpipMn-oIbDJAAOi8r6aRI4P3kDqMutAD6ozI_yzlU4PGtJny3j2KGimLo1DeqnV1wQ/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -364,15 +364,12 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    if (!SCRIPT_URL || SCRIPT_URL.includes("AKfycb...")) {
-      alert("URL Web App Google Apps Script belum dipasang pada variabel SCRIPT_URL!");
-      modelInput.value = "-";
-      colourInput.value = "-";
-      return;
-    }
-
     try {
-      const response = await fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`);
+      // Menggunakan fetch biasa ke Google Apps Script URL
+      const response = await fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`, {
+        method: "GET"
+      });
+      
       const data = await response.json();
 
       if (data && data.status === "success") {
@@ -381,16 +378,16 @@
       } else {
         modelInput.value = "Tidak Ditemukan";
         colourInput.value = "Tidak Ditemukan";
-        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA Google Sheets.");
+        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error Fetch VIN:", err);
       modelInput.value = "Gagal Akses";
       colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets. Pastikan 'Who has access' di Apps Script diatur ke 'Anyone'.");
+      alert("Gagal terhubung ke Google Sheets. Cek koneksi atau pendaftaran Apps Script.");
     }
   }
-
+  
   // Kamera Live Scan
   function toggleScanner() {
     if (isScanning) {
