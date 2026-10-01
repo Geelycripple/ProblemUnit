@@ -2,678 +2,210 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Unit Problem Geely</title>
-
-  <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
-  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
-
   <style>
-    :root {
-      --bg-color: #f1f5f9;
-      --card-bg: #ffffff;
-      --input-bg: #ffffff;
-      --input-readonly: #e2e8f0;
-      --input-border: #cbd5e1;
-      --input-focus: #2563eb;
-      --text-main: #0f172a;
-      --text-label: #334155;
-      --text-muted: #64748b;
-      --btn-green: #10b981;
-      --btn-blue: #1d62cd;
-      --radius: 12px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      padding: 16px 12px 32px 12px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-
-    .form-container {
-      width: 100%;
-      max-width: 480px;
-      background-color: var(--card-bg);
-      border-radius: 20px;
-      padding: 24px 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-      position: relative;
-    }
-
-    .form-header {
-      margin-bottom: 24px;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 12px;
-    }
-
-    .form-header h2 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: var(--text-main);
-      letter-spacing: -0.01em;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-group-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-label);
-      margin-bottom: 6px;
-    }
-
-    label span.cn {
-      font-weight: 500;
-      color: var(--text-muted);
-      margin-left: 4px;
-    }
-
-    label span.req {
-      color: #ef4444;
-      margin-left: 2px;
-    }
-
-    input[type="text"], select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      background-color: var(--input-bg);
-      border: 1px solid var(--input-border);
-      border-radius: var(--radius);
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.2s ease-in-out;
-    }
-
-    select {
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px top 50%;
-      background-size: 12px auto;
-    }
-
-    input[readonly] {
-      background-color: var(--input-readonly) !important;
-      color: #475569 !important;
-      cursor: not-allowed;
-      border-color: #cbd5e1;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--input-focus);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      color: #ffffff;
-      margin-bottom: 10px;
-    }
-
-    .btn-green { background-color: var(--btn-green); }
-
-    .btn-submit {
-      background-color: var(--btn-blue);
-      color: #ffffff;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: var(--radius);
-      margin-top: 12px;
-      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.25);
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-      opacity: 0.9;
-    }
-
-    .scroll-select-box {
-      max-height: 160px;
-      overflow-y: auto;
-      background-color: #f8fafc;
-      border: 1px solid var(--input-border);
-      border-radius: var(--radius);
-      padding: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .scroll-option {
-      display: flex;
-      align-items: center;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background-color: #ffffff;
-      border: 1px solid #f1f5f9;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .scroll-option input[type="checkbox"] {
-      margin-right: 12px;
-      width: 18px;
-      height: 18px;
-      accent-color: var(--btn-blue);
-    }
-
-    .scroll-option span {
-      font-size: 0.9rem;
-      color: var(--text-main);
-      font-weight: 500;
-    }
-
-    #interactive.viewport {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 12px;
-      display: none;
-      border: 2px solid var(--btn-blue);
-      background-color: #000;
-    }
-
-    #interactive.viewport video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .scan-line {
-      position: absolute;
-      top: 50%;
-      left: 5%;
-      width: 90%;
-      height: 2px;
-      background: #ef4444;
-      box-shadow: 0 0 8px #ef4444;
-      z-index: 10;
-      pointer-events: none;
-    }
-
-    .hint-text {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    /* OVERLAY MODAL SUKSES (PAS DI TENGAH LAYAR HP) */
-    .success-modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      padding: 16px;
-    }
-
-    /* KOTAK MODAL SUKSES */
-    .success-card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 400px;
-      border-radius: 24px;
-      padding: 36px 24px 28px 24px;
-      text-align: center;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e2e8f0;
-      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes popIn {
-      from { transform: scale(0.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
-    .check-icon-circle {
-      width: 100px;
-      height: 100px;
-      background-color: #dcfce7;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px auto;
-      box-shadow: 0 8px 20px rgba(34, 197, 94, 0.18);
-    }
-
-    .check-icon-circle svg {
-      width: 58px;
-      height: 58px;
-      stroke: #16a34a;
-      stroke-width: 3.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
-    }
-
-    /* BARIS 1: NO VIN (HIJAU) */
-    .success-vin {
-      color: #15803d;
-      font-weight: 700;
-      font-size: 1.3rem;
-      margin-bottom: 4px;
-      word-break: break-all;
-    }
-
-    /* BARIS 2: BERHASIL TERDATA (HIJAU) */
-    .success-title {
-      color: #15803d;
-      font-weight: 700;
-      font-size: 1.25rem;
-      margin-bottom: 8px;
-    }
-
-    /* BARIS 3: SUBTITLE (ABU-ABU) */
-    .success-subtitle {
-      color: #64748b;
-      font-size: 0.95rem;
-      margin-bottom: 28px;
-      line-height: 1.4;
-    }
-
-    .btn-new-report {
-      width: 100%;
-      padding: 14px;
-      background-color: #1d62cd;
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(29, 98, 205, 0.25);
-    }
-
-    .btn-new-report:active {
-      transform: scale(0.98);
-    }
+    body { font-family: Arial, sans-serif; margin: 15px; background-color: #f4f6f9; }
+    .card { background: white; padding: 20px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #1a252f; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; color: #333; }
+    input[type="text"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; background: #fafafa; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; }
+    button { width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:disabled { background-color: #95a5a6; }
+    .row-2 { display: flex; gap: 10px; }
+    .row-2 > div { flex: 1; }
   </style>
 </head>
 <body>
 
-<div class="form-container">
-  <!-- FORM UTAMA -->
-  <form id="unitForm" onsubmit="return false;">
-    <div class="form-header">
-      <h2>Unit Problem Geely <span style="font-size: 0.95rem; color: #64748b; font-weight: normal;">吉利车辆问题</span></h2>
-    </div>
-
-    <div class="form-group form-group-row">
-      <div>
-        <label>Date <span class="cn">日期</span><span class="req">*</span></label>
+<div class="card">
+  <h2>Unit Problem Geely 吉利车辆问题</h2>
+  
+  <form id="problemForm">
+    <!-- Date & Time -->
+    <div class="row-2">
+      <div class="form-group">
+        <label>Date 日期*</label>
         <input type="text" id="dateInput" readonly>
       </div>
-      <div>
-        <label>Time <span class="cn">时间</span><span class="req">*</span></label>
+      <div class="form-group">
+        <label>Time 时间*</label>
         <input type="text" id="timeInput" readonly>
       </div>
     </div>
 
-    <!-- VIN Section -->
+    <!-- VIN & Scan Barcode -->
     <div class="form-group">
-      <label>VIN NO <span class="cn">车架号</span><span class="req">*</span></label>
-      <button type="button" class="btn btn-green" id="btnLiveScan">📷 Live Scan Barcode</button>
-      
-      <div id="interactive" class="viewport">
-        <div class="scan-line"></div>
-      </div>
-
-      <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-      <div class="hint-text">*Arahkan garis merah horizontal tepat di tengah-tengah barcode.</div>
+      <label>VIN NO 车架号*</label>
+      <button type="button" id="scanBtn" style="background-color: #00a86b; margin-bottom: 8px;">📷 Live Scan Barcode</button>
+      <input type="text" id="vinInput" placeholder="Hasil Scan VIN..." required>
     </div>
 
-    <!-- Car Model -->
+    <!-- Car Model & Colour -->
     <div class="form-group">
-      <label>Car Model <span class="cn">车型</span></label>
-      <input type="text" id="carModel" placeholder="Terisi otomatis..." readonly>
+      <label>Car Model 车型</label>
+      <input type="text" id="carModelInput" placeholder="Terisi otomatis..." readonly>
+    </div>
+    <div class="form-group">
+      <label>Colour 颜色</label>
+      <input type="text" id="colourInput" placeholder="Terisi otomatis..." readonly>
     </div>
 
-    <!-- Colour -->
+    <!-- 1. Station -->
     <div class="form-group">
-      <label>Colour <span class="cn">颜色</span></label>
-      <input type="text" id="colour" placeholder="Terisi otomatis..." readonly>
-    </div>
-
-    <!-- Last Station -->
-    <div class="form-group">
-      <label>Last Station <span class="cn">末端工位</span><span class="req">*</span></label>
-      <select id="lastStation" required>
-        <option value="" disabled selected>Pilih Last Station... / 请选择</option>
-        <option value="In Testline">1. In Testline</option>
-        <option value="Inspection">2. Inspection</option>
-        <option value="Sign Off">3. Sign Off</option>
+      <label>Station 工位*</label>
+      <select id="stationSelect" required>
+        <option value="">Pilih Station / 请选择</option>
+        <option value="IN TESTLINE">IN TESTLINE</option>
+        <option value="INSPECTION">INSPECTION</option>
+        <option value="AFTER INSPECTION">AFTER INSPECTION</option>
+        <option value="SIGN OFF">SIGN OFF</option>
       </select>
     </div>
 
-    <!-- Multi-Select Problem -->
+    <!-- 2. Problem Inspection (Multi Select) -->
     <div class="form-group">
-      <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
-      <div class="scroll-select-box">
-        <label class="scroll-option" style="background-color: #ecfdf5; border-color: #a7f3d0;">
-          <input type="checkbox" name="problem" value="PROBLEM DONE">
-          <span style="color: #059669; font-weight: 700;">✅ PROBLEM DONE 修复完成</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Electrical">
-          <span>Electrical 电气问题</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Dent Issue">
-          <span>Dent Issue 凹陷/外观</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Repair">
-          <span>Repair 维修</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Change Part">
-          <span>Change Part 更换零部件</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Painting">
-          <span>Painting 喷漆/油漆</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="Noise">
-          <span>Noise 异响/噪音</span>
-        </label>
-        <label class="scroll-option">
-          <input type="checkbox" name="problem" value="OTHER">
-          <span>OTHER 其他</span>
-        </label>
+      <label>Problem Inspection 检验问题*</label>
+      <div class="checkbox-group" id="problemInspectionGroup">
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> Gap</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> Rash</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> Flush</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> Wavy</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> Bending</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> Dent Issue</label>
+        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> Crater</label>
+        <label class="checkbox-item" style="color: green; font-weight: bold;"><input type="checkbox" name="probInsp" value="PROBLEM DONE"> ✅ PROBLEM DONE</label>
       </div>
     </div>
 
-    <!-- Problem Description -->
+    <!-- 3. Problem Description Inspection -->
     <div class="form-group">
-      <label>Problem Description <span class="cn">问题详细描述</span></label>
-      <textarea id="problemDescription" rows="3" placeholder="Describe the issue in detail... 请详细描述问题"></textarea>
+      <label>Problem Description Inspection 检验问题详细描述</label>
+      <textarea id="descInspInput" rows="2" placeholder="Masukkan rincian problem inspection..."></textarea>
     </div>
 
-    <button type="button" class="btn btn-submit" id="submitBtn">Submit Data 提交</button>
+    <!-- 4. Problem After Inspection (Multi Select) -->
+    <div class="form-group">
+      <label>Problem After Inspection 检验后问题*</label>
+      <div class="checkbox-group" id="problemAfterGroup">
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> Noise</label>
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> ADAS</label>
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> Electrical</label>
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> Mechanichal</label>
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> Change Part</label>
+        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> Liquidity</label>
+        <label class="checkbox-item" style="color: green; font-weight: bold;"><input type="checkbox" name="probAfter" value="PROBLEM DONE"> ✅ PROBLEM DONE</label>
+      </div>
+    </div>
+
+    <!-- 5. Problem Description After Inspection -->
+    <div class="form-group">
+      <label>Problem Description After Inspection 检验后问题详细描述</label>
+      <textarea id="descAfterInput" rows="2" placeholder="Masukkan rincian problem after inspection..."></textarea>
+    </div>
+
+    <button type="submit" id="submitBtn">SUBMIT / 提交</button>
   </form>
 </div>
 
-<!-- MODAL POPUP SUKSES (SIT IN CENTER) -->
-<div id="successModal" class="success-modal-overlay">
-  <div class="success-card">
-    <div class="check-icon-circle">
-      <svg viewBox="0 0 24 24">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
-    </div>
-    
-    <!-- 1. NOMOR VIN (HIJAU) -->
-    <div class="success-vin" id="successVinNo">MGEEH40FXTJ013701</div>
-
-    <!-- 2. BERHASIL TERDATA (HIJAU) -->
-    <div class="success-title">BERHASIL TERDATA</div>
-
-    <!-- 3. SUBTITLE (ABU-ABU) -->
-    <div class="success-subtitle">Report Anda Sudah Masuk ke Google Sheet</div>
-
-    <button type="button" class="btn-new-report" id="btnNewReport">+ New Unit Report 新建报告</button>
-  </div>
-</div>
-
 <script>
-  // PASTI-KAN URL GOOGLE APPS SCRIPT BERAKHIRAN /exec
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbbC8YzxY1YwqqdpmsmVF-R6ggHbWAQkGSaHEMCAwwcJZhUdUDzzLqPkv4K6ktOBe-2Q/exec"; 
-  let isScanning = false;
+  // ** GANTI DENGAN URL APPS SCRIPT ANDA **
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyo6rfoyg1NvkPTIpIUv1r0dDf6Q7UhUo9VenHvPbz2luhEriZmmBWADZyRwxh5xABJKA/exec";
 
-  document.addEventListener("DOMContentLoaded", function() {
-    updateDateTime();
-    document.getElementById("btnLiveScan").addEventListener("click", toggleScanner);
-    document.getElementById("submitBtn").addEventListener("click", submitForm);
-    document.getElementById("btnNewReport").addEventListener("click", resetToNewReport);
-  });
-
+  // Auto Set Date & Time
   function updateDateTime() {
     const now = new Date();
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+    document.getElementById('timeInput').value = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   }
+  setInterval(updateDateTime, 1000);
+  updateDateTime();
 
-  // Lookup VIN Menggunakan JSONP (Kebal CORS Safari iOS)
-  function fetchVinDetails(vin) {
-    document.getElementById('vinInput').value = vin;
-    const modelInput = document.getElementById('carModel');
-    const colourInput = document.getElementById('colour');
+  // Auto Search VIN
+  document.getElementById('vinInput').addEventListener('change', function() {
+    const vin = this.value.trim();
+    if (!vin) return;
 
-    modelInput.value = "Mencari...";
-    colourInput.value = "Mencari...";
+    document.getElementById('carModelInput').value = "Mencari...";
+    document.getElementById('colourInput').value = "Mencari...";
 
-    const callbackName = "cb_" + Math.floor(Math.random() * 1000000);
+    const cbName = 'jsonp_search_' + Math.round(100000 * Math.random());
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?action=searchVIN&vin=${encodeURIComponent(vin)}&callback=${cbName}&authuser=0`;
 
-    window[callbackName] = function(data) {
-      if (data && data.status === "success") {
-        modelInput.value = data.carModel || "-";
-        colourInput.value = data.colour || "-";
+    window[cbName] = function(data) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      if (data.status === 'success') {
+        document.getElementById('carModelInput').value = data.carModel || '';
+        document.getElementById('colourInput').value = data.colour || '';
       } else {
-        modelInput.value = "Tidak Ditemukan";
-        colourInput.value = "Tidak Ditemukan";
-        alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
+        alert("VIN tidak ditemukan di Master Data!");
+        document.getElementById('carModelInput').value = '';
+        document.getElementById('colourInput').value = '';
       }
-      cleanup();
+    };
+    document.body.appendChild(script);
+  });
+
+  // Submit Form
+  document.getElementById('problemForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Mengirim...";
+
+    // Ambil checkbox Problem Inspection
+    const probInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value).join(', ');
+    
+    // Ambil checkbox Problem After Inspection
+    const probAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value).join(', ');
+
+    const payload = {
+      action: 'saveData',
+      timeInput: document.getElementById('dateInput').value + " " + document.getElementById('timeInput').value,
+      vin: document.getElementById('vinInput').value.trim(),
+      carModel: document.getElementById('carModelInput').value,
+      colour: document.getElementById('colourInput').value,
+      station: document.getElementById('stationSelect').value,
+      problemInspection: probInsp,
+      descInspection: document.getElementById('descInspInput').value,
+      problemAfter: probAfter,
+      descAfter: document.getElementById('descAfterInput').value
     };
 
-    function cleanup() {
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-      delete window[callbackName];
-    }
-
+    const cbName = 'jsonp_save_' + Math.round(100000 * Math.random());
     const script = document.createElement('script');
-    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=${callbackName}`;
+    script.src = `${SCRIPT_URL}?action=saveData&data=${encodeURIComponent(JSON.stringify(payload))}&callback=${cbName}&authuser=0`;
+
+    window[cbName] = function(res) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      submitBtn.disabled = false;
+      submitBtn.innerText = "SUBMIT / 提交";
+
+      if (res.status === 'success') {
+        alert(res.message);
+        document.getElementById('problemForm').reset();
+        updateDateTime();
+      } else {
+        alert("Gagal: " + res.message);
+      }
+    };
+
     script.onerror = function() {
-      modelInput.value = "Gagal Akses";
-      colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets. Cek URL Apps Script.");
-      cleanup();
+      delete window[cbName];
+      document.body.removeChild(script);
+      submitBtn.disabled = false;
+      submitBtn.innerText = "SUBMIT / 提交";
+      alert("Error jaringan atau URL Apps Script belum valid.");
     };
 
     document.body.appendChild(script);
-  }
-
-  // Scanner Kamera
-  function toggleScanner() {
-    if (isScanning) {
-      stopScanner();
-    } else {
-      startScanner();
-    }
-  }
-
-  function startScanner() {
-    const viewport = document.getElementById('interactive');
-    viewport.style.display = 'block';
-
-    if (typeof Quagga === "undefined") {
-      alert("Library Scanner belum siap. Cek koneksi internet.");
-      return;
-    }
-
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: viewport,
-        constraints: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "environment"
-        },
-      },
-      locator: { patchSize: "large", halfSample: true },
-      numOfWorkers: 1,
-      decoder: { readers: ["code_128_reader", "code_39_reader"] },
-      locate: true
-    }, function(err) {
-      if (err) {
-        alert("Kamera gagal diakses: " + err);
-        viewport.style.display = 'none';
-        return;
-      }
-      Quagga.start();
-      isScanning = true;
-    });
-
-    Quagga.onDetected(onBarcodeDetected);
-  }
-
-  function onBarcodeDetected(result) {
-    if (result && result.codeResult && result.codeResult.code) {
-      const code = result.codeResult.code;
-      if (code.length >= 10) {
-        stopScanner();
-        fetchVinDetails(code);
-      }
-    }
-  }
-
-  function stopScanner() {
-    if (isScanning) {
-      Quagga.stop();
-      Quagga.offDetected(onBarcodeDetected);
-      document.getElementById('interactive').style.display = 'none';
-      isScanning = false;
-    }
-  }
-
-  // Submit Form
-  function submitForm() {
-    const vin = document.getElementById("vinInput").value;
-    const carModel = document.getElementById("carModel").value;
-    const colour = document.getElementById("colour").value;
-    const lastStation = document.getElementById("lastStation").value;
-    const problemDescription = document.getElementById("problemDescription").value;
-
-    const selectedProblems = [];
-    document.querySelectorAll('input[name="problem"]:checked').forEach((cb) => {
-      selectedProblems.push(cb.value);
-    });
-
-    if (!vin) {
-      alert("Harap scan barcode VIN terlebih dahulu!");
-      return;
-    }
-
-    if (!lastStation) {
-      alert("Harap pilih Last Station terlebih dahulu!");
-      return;
-    }
-
-    if (selectedProblems.length === 0) {
-      alert("Harap pilih minimal 1 jenis Problem!");
-      return;
-    }
-
-    const btn = document.getElementById("submitBtn");
-    btn.innerText = "Submitting... 提交中";
-    btn.disabled = true;
-
-    const formData = new URLSearchParams();
-    formData.append("vin", vin);
-    formData.append("carModel", carModel);
-    formData.append("colour", colour);
-    formData.append("lastStation", lastStation);
-    formData.append("problem", selectedProblems.join(", "));
-    formData.append("problemDescription", problemDescription);
-
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: formData.toString()
-    })
-    .then(() => {
-      // Set nomor VIN di modal
-      document.getElementById("successVinNo").innerText = vin;
-
-      // Scroll halus ke paling atas agar modal langsung fokus di tengah
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // Tampilkan Overlay Modal
-      document.getElementById("successModal").style.display = "flex";
-    })
-    .catch(error => {
-      alert("Gagal mengirim data.");
-      console.error(error);
-    })
-    .finally(() => {
-      btn.innerText = "Submit Data 提交";
-      btn.disabled = false;
-    });
-  }
-
-  // Reset ke Form Baru
-  function resetToNewReport() {
-    document.getElementById("unitForm").reset();
-    document.getElementById("vinInput").value = "";
-    document.getElementById("carModel").value = "";
-    document.getElementById("colour").value = "";
-    document.getElementById("lastStation").value = "";
-    document.getElementById("problemDescription").value = "";
-    document.querySelectorAll('input[name="problem"]').forEach(cb => cb.checked = false);
-
-    updateDateTime();
-
-    // Sembunyikan Modal Popup
-    document.getElementById("successModal").style.display = "none";
-
-    // Scroll halus ke atas form
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  });
 </script>
-
 </body>
 </html>
