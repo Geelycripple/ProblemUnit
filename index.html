@@ -356,7 +356,8 @@
   }
 
   // Lookup data menggunakan Fetch API yang stabil
-  async function fetchVinDetails(vin) {
+  // Lookup data menggunakan metode JSONP (Tembus Safari iOS / GitHub Pages)
+  function fetchVinDetails(vin) {
     document.getElementById('vinInput').value = vin;
     const modelInput = document.getElementById('carModel');
     const colourInput = document.getElementById('colour');
@@ -364,14 +365,11 @@
     modelInput.value = "Mencari...";
     colourInput.value = "Mencari...";
 
-    try {
-      // Menggunakan fetch biasa ke Google Apps Script URL
-      const response = await fetch(`${SCRIPT_URL}?vin=${encodeURIComponent(vin)}`, {
-        method: "GET"
-      });
-      
-      const data = await response.json();
+    // Nama callback unik
+    const callbackName = "handleVinResult_" + Math.floor(Math.random() * 100000);
 
+    // Buat fungsi callback global sementara
+    window[callbackName] = function(data) {
       if (data && data.status === "success") {
         modelInput.value = data.carModel || "-";
         colourInput.value = data.colour || "-";
@@ -380,12 +378,24 @@
         colourInput.value = "Tidak Ditemukan";
         alert("VIN: " + vin + " tidak terdaftar di MASTER DATA.");
       }
-    } catch (err) {
-      console.error("Error Fetch VIN:", err);
+
+      // Bersihkan script setelah dipanggil
+      document.body.removeChild(script);
+      delete window[callbackName];
+    };
+
+    // Buat tag script untuk panggil Google Apps Script
+    const script = document.createElement('script');
+    script.src = `${SCRIPT_URL}?vin=${encodeURIComponent(vin)}&callback=${callbackName}`;
+    script.onerror = function() {
       modelInput.value = "Gagal Akses";
       colourInput.value = "Gagal Akses";
-      alert("Gagal terhubung ke Google Sheets. Cek koneksi atau pendaftaran Apps Script.");
-    }
+      alert("Gagal terhubung ke Google Sheets. Pastikan deployment Apps Script sudah versi terbaru.");
+      document.body.removeChild(script);
+      delete window[callbackName];
+    };
+
+    document.body.appendChild(script);
   }
   
   // Kamera Live Scan
