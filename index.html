@@ -293,6 +293,11 @@
   <div class="form-group">
     <label>Problem <span class="cn">问题类别</span><span class="req">*</span></label>
     <div class="scroll-select-box">
+      <!-- Opsi Baru: PROBLEM DONE -->
+      <label class="scroll-option" style="background-color: #ecfdf5; border-color: #a7f3d0;">
+        <input type="checkbox" name="problem" value="PROBLEM DONE">
+        <span style="color: #059669; font-weight: 700;">✅ PROBLEM DONE 修复完成</span>
+      </label>
       <label class="scroll-option">
         <input type="checkbox" name="problem" value="Electrical">
         <span>Electrical 电气问题</span>
@@ -335,7 +340,7 @@
 
 <script>
   // TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwAZicNnNZXoD_ScvYE1cfaxvRlzehOLf1-6BE9rK-qp3aj1UyVNEPm51daZr7MmSpXmg/exec"; 
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyzRkHVf1hETnqhfA_j1z4QfGLOs7yQdj_FOZE8Mv7INm1xJVTz2VoevuP2hdOyWhMSwQ/exec"; 
   let isScanning = false;
 
   document.addEventListener("DOMContentLoaded", function() {
