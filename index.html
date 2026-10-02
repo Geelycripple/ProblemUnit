@@ -15,7 +15,7 @@
     .card { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
     h2 { text-align: center; font-size: 20px; margin-top: 0; margin-bottom: 20px; color: #1a202c; }
     
-    .form-group { margin-bottom: 16px; }
+    .form-group { margin-bottom: 16px; transition: opacity 0.2s ease; }
     label { font-size: 13px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 6px; }
     
     input[type="text"], select, textarea { 
@@ -41,11 +41,16 @@
     .checkbox-scroll-box::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
     
     .checkbox-item { 
-      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s;
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s, opacity 0.2s;
     }
     .checkbox-item:hover { background: #f7fafc; }
     .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; }
-    .checkbox-item.done-item { border-color: #c6f6d5; background: #f0fff4; color: #22543d; font-weight: 700; }
+
+    /* Disabled Section Style */
+    .section-disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
 
     /* Submit Button */
     .btn-submit { 
@@ -142,45 +147,45 @@
       </select>
     </div>
 
-    <!-- 2. Problem Inspection (Multi Select Scrollable) -->
-    <div class="form-group">
-      <label>Problem Inspection 检验问题*</label>
-      <div class="checkbox-scroll-box">
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> Gap</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> Rash</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> Flush</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> Wavy</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> Bending</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> Dent Issue</label>
-        <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> Crater</label>
-        <label class="checkbox-item done-item"><input type="checkbox" name="probInsp" value="PROBLEM DONE"> ✅ PROBLEM DONE</label>
+    <!-- 2. Problem Inspection Section -->
+    <div id="sectionInspect">
+      <div class="form-group">
+        <label>Problem Inspection 检验问题*</label>
+        <div class="checkbox-scroll-box">
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> Gap</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> Rash</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> Flush</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> Wavy</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> Bending</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> Dent Issue</label>
+          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> Crater</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Problem Description Inspection 检验问题详细描述</label>
+        <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
       </div>
     </div>
 
-    <!-- 3. Problem Description Inspection -->
-    <div class="form-group">
-      <label>Problem Description Inspection 检验问题详细描述</label>
-      <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
-    </div>
-
-    <!-- 4. Problem After Inspection (Multi Select Scrollable) -->
-    <div class="form-group">
-      <label>Problem After Inspection 检验后问题*</label>
-      <div class="checkbox-scroll-box">
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> Noise</label>
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> ADAS</label>
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> Electrical</label>
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> Mechanichal</label>
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> Change Part</label>
-        <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> Liquidity</label>
-        <label class="checkbox-item done-item"><input type="checkbox" name="probAfter" value="PROBLEM DONE"> ✅ PROBLEM DONE</label>
+    <!-- 3. Problem After Inspection Section -->
+    <div id="sectionAfter">
+      <div class="form-group">
+        <label>Problem After Inspection 检验后问题*</label>
+        <div class="checkbox-scroll-box">
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> Noise</label>
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> ADAS</label>
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> Electrical</label>
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> Mechanichal</label>
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> Change Part</label>
+          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> Liquidity</label>
+        </div>
       </div>
-    </div>
 
-    <!-- 5. Problem Description After Inspection -->
-    <div class="form-group">
-      <label>Problem Description After Inspection 检验后问题详细描述</label>
-      <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
+      <div class="form-group">
+        <label>Problem Description After Inspection 检验后问题详细描述</label>
+        <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
+      </div>
     </div>
 
     <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
@@ -227,10 +232,51 @@
   setInterval(updateDateTime, 1000);
   updateDateTime();
 
-  // Fetch Auto-Fill Car Model & Colour dari MASTER DATA
+  // Reset Checkbox Form
+  function uncheckAllBoxes() {
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  }
+
+  // 1. LOGIKA CONTROL INPUT BERDASARKAN STATION Pilihan Operator
+  document.getElementById('stationSelect').addEventListener('change', handleStationControl);
+
+  function handleStationControl() {
+    const station = document.getElementById('stationSelect').value.toUpperCase();
+    const secInspect = document.getElementById('sectionInspect');
+    const secAfter = document.getElementById('sectionAfter');
+
+    if (station === 'SIGN OFF') {
+      // SIGN OFF: Buka kedua-duanya untuk memilah problem yang beres / dicoret
+      setSectionState(secInspect, true);
+      setSectionState(secAfter, true);
+    } else if (station.includes('AFTER')) {
+      // AFTER INSPECTION: Hanya After Inspection yang Aktif
+      setSectionState(secInspect, false);
+      setSectionState(secAfter, true);
+    } else {
+      // INSPECTION (Atau station lain): Hanya Inspection yang Aktif
+      setSectionState(secInspect, true);
+      setSectionState(secAfter, false);
+    }
+  }
+
+  function setSectionState(sectionElem, isEnabled) {
+    if (isEnabled) {
+      sectionElem.classList.remove('section-disabled');
+    } else {
+      sectionElem.classList.add('section-disabled');
+    }
+
+    const inputs = sectionElem.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.disabled = !isEnabled;
+    });
+  }
+
+  // 2. Fetch Auto-Fill Car Model, Colour, & Load Problem Existing dari Google Sheet
   function fetchMasterData(vin) {
-    document.getElementById('carModelInput').value = "Mencari di MASTER DATA...";
-    document.getElementById('colourInput').value = "Mencari di MASTER DATA...";
+    document.getElementById('carModelInput').value = "Mencari data VIN...";
+    document.getElementById('colourInput').value = "Mencari data VIN...";
 
     const cbName = 'jsonp_master_' + Math.round(100000 * Math.random());
     const script = document.createElement('script');
@@ -243,6 +289,39 @@
       if (data.status === 'success') {
         document.getElementById('carModelInput').value = data.carModel || '-';
         document.getElementById('colourInput').value = data.colour || '-';
+
+        // Uncheck dulu semua pilihan awal
+        uncheckAllBoxes();
+
+        // JIKA VIN MEMILIKI PROBLEM EXISTING DI SHEET, OTO-CENTANGKAN KE UI
+        if (data.existingProblem && data.existingProblem.found) {
+          const pInspect = data.existingProblem.problemInspection || "";
+          const pAfter = data.existingProblem.problemAfter || "";
+
+          // Auto-select station jika sebelumnya pernah di-scan
+          if (data.existingProblem.station && !document.getElementById('stationSelect').value) {
+            document.getElementById('stationSelect').value = data.existingProblem.station;
+            handleStationControl();
+          }
+
+          // Centang problem Inspection yang aktif
+          if (pInspect && pInspect !== "PROBLEM DONE") {
+            pInspect.split(',').forEach(item => {
+              const val = item.trim();
+              const box = document.querySelector(`input[name="probInsp"][value="${val}"]`);
+              if (box) box.checked = true;
+            });
+          }
+
+          // Centang problem After Inspection yang aktif
+          if (pAfter && pAfter !== "PROBLEM DONE") {
+            pAfter.split(',').forEach(item => {
+              const val = item.trim();
+              const box = document.querySelector(`input[name="probAfter"][value="${val}"]`);
+              if (box) box.checked = true;
+            });
+          }
+        }
       } else {
         alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
         document.getElementById('carModelInput').value = "";
@@ -254,7 +333,7 @@
     script.onerror = function() {
       delete window[cbName];
       if (document.body.contains(script)) document.body.removeChild(script);
-      alert("Gagal terhubung ke Google Sheets untuk mengambil Master Data.");
+      alert("Gagal terhubung ke Google Sheets untuk mengambil Data.");
       document.getElementById('carModelInput').value = "";
       document.getElementById('colourInput').value = "";
     };
@@ -262,7 +341,7 @@
     document.body.appendChild(script);
   }
 
-  // Quagga2 Camera Scanner Logic
+  // 3. Quagga2 Camera Scanner Logic
   let isScanning = false;
 
   document.getElementById('openScanBtn').addEventListener('click', function() {
@@ -284,14 +363,9 @@
           height: { min: 480, ideal: 720 }
         }
       },
-      locator: {
-        patchSize: "medium",
-        halfSample: true
-      },
+      locator: { patchSize: "medium", halfSample: true },
       numOfWorkers: 2,
-      decoder: {
-        readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader"]
-      },
+      decoder: { readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader"] },
       locate: true
     }, function(err) {
       if (err) {
@@ -311,7 +385,6 @@
     if (!result || !result.codeResult || !result.codeResult.code) return;
     
     const code = result.codeResult.code.trim();
-    // Validasi panjang VIN standar (minimal 5 karakter/17 karakter)
     if (code.length >= 5) {
       document.getElementById('vinInput').value = code;
       stopQuagga();
@@ -329,7 +402,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // Submit Form Process
+  // 4. Submit Form Process
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -343,6 +416,7 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
+    // Mengambil pilihan problem (jika dicoret/uncheck, otomatis tidak terambil)
     const probInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value).join(', ');
     const probAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value).join(', ');
 
@@ -390,12 +464,17 @@
     document.body.appendChild(script);
   });
 
-  // + New Unit Report Button (Reset Form & Hide Overlay)
+  // 5. + New Unit Report Button (Reset Form & Hide Overlay)
   document.getElementById('newReportBtn').addEventListener('click', function() {
     document.getElementById('problemForm').reset();
+    uncheckAllBoxes();
+    handleStationControl();
     document.getElementById('successOverlay').style.display = 'none';
     updateDateTime();
   });
+
+  // Inisialisasi Kontrol Station saat Halaman Siap
+  handleStationControl();
 </script>
 
 </body>
