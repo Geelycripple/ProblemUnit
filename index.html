@@ -21,7 +21,7 @@
     input[type="text"], select, textarea { 
       width: 100%; padding: 12px; font-size: 14px; border: 1px solid #cbd5e0; border-radius: 10px; background-color: #ffffff; color: #2d3748; outline: none; transition: all 0.2s;
     }
-    input[readonly], select:disabled { background-color: #edf2f7; color: #4a5568; cursor: not-allowed; }
+    input[readonly], select:disabled, textarea:disabled { background-color: #edf2f7; color: #4a5568; cursor: not-allowed; }
     input[type="text"]:focus, select:focus, textarea:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); }
 
     .row-2 { display: flex; gap: 10px; }
@@ -30,10 +30,8 @@
     /* Highlight Station Box */
     .station-box { background: #edf2f7; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e0; margin-bottom: 16px; }
 
-    /* Blur & Disabled Overlay Area */
-    .form-blur-area {
-      transition: all 0.3s ease;
-    }
+    /* Blur & Disabled Area */
+    .form-blur-area { transition: all 0.3s ease; }
     .is-blurred {
       filter: blur(4px);
       opacity: 0.3;
@@ -84,10 +82,12 @@
       border-color: #cbd5e1;
     }
 
-    /* Disabled Section */
-    .section-disabled {
-      opacity: 0.3;
-      pointer-events: none;
+    /* Style Khusus Section yang Dikunci/Disabled */
+    .section-locked {
+      filter: blur(2px);
+      opacity: 0.35 !important;
+      pointer-events: none !important;
+      user-select: none !important;
     }
 
     /* Submit Button */
@@ -271,7 +271,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5lWVKYc3i2kJSZqFiJLHcLdZ33SaE00yEEjyWC85NUwYikUq53Rv5e7PN0dy0kBqGXw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu2Tk_9ufvbSbaSVeICQPwCXAkrvsJuijtKYva7OqTKL-v8xB-7VCRMt_rNF8u-lxB/exec";
 
   let globalVinData = null;
 
@@ -290,7 +290,7 @@
     });
   }
 
-  // Effect Strikethrough saat Checkbox di-uncheck
+  // Strikethrough Effect
   document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', function() {
       toggleStrikethrough(this);
@@ -308,7 +308,7 @@
     }
   }
 
-  // 1. KONTROL LOCK STATION & UNBLUR FORM
+  // 1. KONTROL MUTLAK PENGUNCIAN KEDUA SECTION
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
@@ -325,58 +325,57 @@
       return;
     }
 
-    // LOCK STATION DILAKUKAN DI SINI (DISABLED SELECT)
+    // Lock dropdown station
     stationElem.disabled = true;
     document.getElementById('lockNotice').style.display = 'block';
-
     blurArea.classList.remove('is-blurred');
 
     if (station === 'SIGN OFF') {
-      setSectionState(secInspect, true);
-      setSectionState(secAfter, true);
+      // SIGN OFF: BUKA DUA-DUANYA
+      setSectionLock(secInspect, false);
+      setSectionLock(secAfter, false);
 
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
         document.getElementById('sumVin').innerText = globalVinData.vin;
         document.getElementById('sumDate').innerText = globalVinData.existingProblem.lastDate || "-";
-        
-        const pInsp = globalVinData.existingProblem.problemInspection || "-";
-        const pAft = globalVinData.existingProblem.problemAfter || "-";
-
-        document.getElementById('sumInspect').innerHTML = formatBadge(pInsp);
-        document.getElementById('sumAfter').innerHTML = formatBadge(pAft);
-
+        document.getElementById('sumInspect').innerHTML = formatBadge(globalVinData.existingProblem.problemInspection || "-");
+        document.getElementById('sumAfter').innerHTML = formatBadge(globalVinData.existingProblem.problemAfter || "-");
         summaryCard.style.display = 'block';
       } else {
         summaryCard.style.display = 'none';
       }
 
     } else if (station.includes('AFTER')) {
-      setSectionState(secInspect, false);
-      setSectionState(secAfter, true);
+      // AFTER INSPECTION: KUNCI INSPECTION, BUKA AFTER INSPECTION
+      setSectionLock(secInspect, true);
+      setSectionLock(secAfter, false);
       summaryCard.style.display = 'none';
+
     } else {
-      setSectionState(secInspect, true);
-      setSectionState(secAfter, false);
+      // INSPECTION: BUKA INSPECTION, KUNCI AFTER INSPECTION
+      setSectionLock(secInspect, false);
+      setSectionLock(secAfter, true);
       summaryCard.style.display = 'none';
     }
+  }
+
+  // Fungsi khusus untuk mengunci/membuka section secara mutlak
+  function setSectionLock(sectionElem, isLocked) {
+    if (isLocked) {
+      sectionElem.classList.add('section-locked');
+    } else {
+      sectionElem.classList.remove('section-locked');
+    }
+
+    const inputs = sectionElem.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+      input.disabled = isLocked;
+    });
   }
 
   function formatBadge(probStr) {
     if (!probStr || probStr === "-" || probStr === "PROBLEM DONE") return "<span style='color:green; font-weight:bold;'>PROBLEM DONE / OK</span>";
     return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
-  }
-
-  function setSectionState(sectionElem, isEnabled) {
-    if (isEnabled) {
-      sectionElem.classList.remove('section-disabled');
-    } else {
-      sectionElem.classList.add('section-disabled');
-    }
-
-    const inputs = sectionElem.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-      input.disabled = !isEnabled;
-    });
   }
 
   // 2. FETCH MASTER DATA & CENTANG PROBLEM EXISTING
@@ -399,9 +398,7 @@
 
         uncheckAllBoxes();
 
-        setSectionState(document.getElementById('sectionInspect'), true);
-        setSectionState(document.getElementById('sectionAfter'), true);
-
+        // CENTANG PROBLEM EXISTING DARI GOOGLE SHEET
         if (data.existingProblem && data.existingProblem.found) {
           const pInspect = data.existingProblem.problemInspection || "";
           const pAfter = data.existingProblem.problemAfter || "";
@@ -429,15 +426,8 @@
           }
         }
 
-        // Tampilkan Summary Card jika memilih Station Sign Off
-        const currentStation = document.getElementById('stationSelect').value.toUpperCase();
-        if (currentStation === 'SIGN OFF' && data.existingProblem && data.existingProblem.found) {
-          document.getElementById('sumVin').innerText = data.vin;
-          document.getElementById('sumDate').innerText = data.existingProblem.lastDate || "-";
-          document.getElementById('sumInspect').innerHTML = formatBadge(data.existingProblem.problemInspection || "-");
-          document.getElementById('sumAfter').innerHTML = formatBadge(data.existingProblem.problemAfter || "-");
-          document.getElementById('summaryCard').style.display = 'block';
-        }
+        // PAKSA JALANKAN KONTROL STATION LAGI AGAR BAGIAN TERKUNCI TIDAK BISA DIPILIH SAMA SEKALI
+        handleStationControl();
 
       } else {
         alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
@@ -584,6 +574,9 @@
   document.getElementById('newReportBtn').addEventListener('click', function() {
     window.location.reload();
   });
+
+  // Inisialisasi awal
+  handleStationControl();
 </script>
 
 </body>
