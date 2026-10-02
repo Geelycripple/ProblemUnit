@@ -21,7 +21,7 @@
     input[type="text"], select, textarea { 
       width: 100%; padding: 12px; font-size: 14px; border: 1px solid #cbd5e0; border-radius: 10px; background-color: #ffffff; color: #2d3748; outline: none; transition: all 0.2s;
     }
-    input[readonly] { background-color: #edf2f7; color: #4a5568; cursor: not-allowed; }
+    input[readonly], select:disabled { background-color: #edf2f7; color: #4a5568; cursor: not-allowed; }
     input[type="text"]:focus, select:focus, textarea:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); }
 
     .row-2 { display: flex; gap: 10px; }
@@ -155,9 +155,9 @@
       </div>
     </div>
 
-    <!-- STATION PINTU UTAMA (DITARIK KE ATAS) -->
+    <!-- STATION PINTU UTAMA -->
     <div class="form-group station-box">
-      <label style="color:#2b6cb0;">1. Pilih Station 工位* (Pilih Dahulu)</label>
+      <label style="color:#2b6cb0;" id="stationLabel">1. Pilih Station 工位* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
         <option value="">-- Pilih Station... / 请选择 --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
@@ -165,6 +165,7 @@
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
         <option value="SIGN OFF">SIGN OFF</option>
       </select>
+      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:600; font-size:11px; margin-top:4px;">🔒 Station terkunci. Refresh halaman jika ingin mengganti station.</small>
     </div>
 
     <!-- AREA DENGAN EFEK BLUR SEBELUM STATION DIPILIH -->
@@ -270,7 +271,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXzXfMQTQAVGl92VqABSwi7Nz70dM2-fuL1BnybiQDOBNJ2m6OeFuX8063BlijbnnNBw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5lWVKYc3i2kJSZqFiJLHcLdZ33SaE00yEEjyWC85NUwYikUq53Rv5e7PN0dy0kBqGXw/exec";
 
   let globalVinData = null;
 
@@ -303,29 +304,31 @@
     if (checkboxElem.checked) {
       parentLabel.classList.remove('is-cleared');
     } else {
-      // Jika di-uncheck, berikan garis coret
       parentLabel.classList.add('is-cleared');
     }
   }
 
-  // 1. KONTROL UNBLUR & HIDE/SHOW SECTION BERDASARKAN STATION
+  // 1. KONTROL LOCK STATION & UNBLUR FORM
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
-    const station = document.getElementById('stationSelect').value.toUpperCase();
+    const stationElem = document.getElementById('stationSelect');
+    const station = stationElem.value.toUpperCase();
     const blurArea = document.getElementById('formBlurArea');
     const secInspect = document.getElementById('sectionInspect');
     const secAfter = document.getElementById('sectionAfter');
     const summaryCard = document.getElementById('summaryCard');
 
     if (!station) {
-      // Jika station belum dipilih -> KUNCI & BLUR SEMUA
       blurArea.classList.add('is-blurred');
       summaryCard.style.display = 'none';
       return;
     }
 
-    // Buka blur area
+    // LOCK STATION DILAKUKAN DI SINI (DISABLED SELECT)
+    stationElem.disabled = true;
+    document.getElementById('lockNotice').style.display = 'block';
+
     blurArea.classList.remove('is-blurred');
 
     if (station === 'SIGN OFF') {
@@ -426,7 +429,15 @@
           }
         }
 
-        handleStationControl();
+        // Tampilkan Summary Card jika memilih Station Sign Off
+        const currentStation = document.getElementById('stationSelect').value.toUpperCase();
+        if (currentStation === 'SIGN OFF' && data.existingProblem && data.existingProblem.found) {
+          document.getElementById('sumVin').innerText = data.vin;
+          document.getElementById('sumDate').innerText = data.existingProblem.lastDate || "-";
+          document.getElementById('sumInspect').innerHTML = formatBadge(data.existingProblem.problemInspection || "-");
+          document.getElementById('sumAfter').innerHTML = formatBadge(data.existingProblem.problemAfter || "-");
+          document.getElementById('summaryCard').style.display = 'block';
+        }
 
       } else {
         alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
@@ -569,17 +580,10 @@
     document.body.appendChild(script);
   });
 
-  // 5. + New Unit Report Button
+  // 5. + New Unit Report Button (Reload Halaman)
   document.getElementById('newReportBtn').addEventListener('click', function() {
-    document.getElementById('problemForm').reset();
-    globalVinData = null;
-    uncheckAllBoxes();
-    handleStationControl();
-    document.getElementById('successOverlay').style.display = 'none';
-    updateDateTime();
+    window.location.reload();
   });
-
-  handleStationControl();
 </script>
 
 </body>
