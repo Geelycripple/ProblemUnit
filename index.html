@@ -15,7 +15,7 @@
     .card { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
     h2 { text-align: center; font-size: 20px; margin-top: 0; margin-bottom: 20px; color: #1a202c; }
     
-    .form-group { margin-bottom: 16px; transition: all 0.2s ease; }
+    .form-group { margin-bottom: 16px; transition: all 0.3s ease; }
     label { font-size: 13px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 6px; }
     
     input[type="text"], select, textarea { 
@@ -27,13 +27,27 @@
     .row-2 { display: flex; gap: 10px; }
     .row-2 > div { flex: 1; }
 
+    /* Highlight Station Box */
+    .station-box { background: #edf2f7; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e0; margin-bottom: 16px; }
+
+    /* Blur & Disabled Overlay Area */
+    .form-blur-area {
+      transition: all 0.3s ease;
+    }
+    .is-blurred {
+      filter: blur(4px);
+      opacity: 0.3;
+      pointer-events: none;
+      user-select: none;
+    }
+
     /* Button Scan */
     .btn-scan { 
       width: 100%; padding: 12px; background: #00a86b; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; transition: background 0.2s;
     }
     .btn-scan:hover { background: #008f5a; }
 
-    /* Summary Card / Info Ringkasan SO */
+    /* Summary Card */
     .summary-card {
       display: none;
       background: #ebf8ff;
@@ -57,14 +71,22 @@
     .checkbox-scroll-box::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
     
     .checkbox-item { 
-      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.15s, opacity 0.2s;
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
     }
     .checkbox-item:hover { background: #f7fafc; }
     .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; }
 
-    /* Disabled Section Style */
+    /* Effect Strikethrough saat Uncheck */
+    .checkbox-item.is-cleared {
+      background: #f1f5f9;
+      color: #94a3b8;
+      text-decoration: line-through;
+      border-color: #cbd5e1;
+    }
+
+    /* Disabled Section */
     .section-disabled {
-      opacity: 0.4;
+      opacity: 0.3;
       pointer-events: none;
     }
 
@@ -85,14 +107,13 @@
     #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
     #interactive.viewport canvas { display: none; }
     
-    /* Garis Merah Scanner */
     .scan-guide-line {
       position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 8px red; z-index: 10; transform: translateY(-50%); pointer-events: none;
     }
 
     .btn-close-scanner { margin-top: 12px; width: 100%; padding: 10px; background: #e53e3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-    /* Modern Success Modal Layer (Locked UI) */
+    /* Success Modal */
     .success-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
     }
@@ -134,28 +155,11 @@
       </div>
     </div>
 
-    <!-- VIN & Scan Barcode -->
-    <div class="form-group">
-      <label>VIN NO 车架号*</label>
-      <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
-      <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
-    </div>
-
-    <!-- Car Model & Colour -->
-    <div class="form-group">
-      <label>Car Model 车型</label>
-      <input type="text" id="carModelInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
-    </div>
-    <div class="form-group">
-      <label>Colour 颜色</label>
-      <input type="text" id="colourInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
-    </div>
-
-    <!-- 1. Station -->
-    <div class="form-group">
-      <label>Station 工位*</label>
+    <!-- STATION PINTU UTAMA (DITARIK KE ATAS) -->
+    <div class="form-group station-box">
+      <label style="color:#2b6cb0;">1. Pilih Station 工位* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">Pilih Station... / 请选择</option>
+        <option value="">-- Pilih Station... / 请选择 --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -163,57 +167,78 @@
       </select>
     </div>
 
-    <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
-    <div class="summary-card" id="summaryCard">
-      <div class="summary-card-title">📌 Informasi Riwayat Unit (Sign Off Audit)</div>
-      <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sumVin">-</span></div>
-      <div class="summary-item"><span class="summary-label">Terakhir Update:</span> <span id="sumDate">-</span></div>
-      <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sumInspect">-</span></div>
-      <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sumAfter">-</span></div>
-    </div>
+    <!-- AREA DENGAN EFEK BLUR SEBELUM STATION DIPILIH -->
+    <div class="form-blur-area is-blurred" id="formBlurArea">
 
-    <!-- 2. Problem Inspection Section -->
-    <div id="sectionInspect">
+      <!-- VIN & Scan Barcode -->
       <div class="form-group">
-        <label>Problem Inspection 检验问题*</label>
-        <div class="checkbox-scroll-box">
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> Gap</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> Rash</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> Flush</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> Wavy</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> Bending</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> Dent Issue</label>
-          <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> Crater</label>
+        <label>VIN NO 车架号*</label>
+        <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
+        <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
+      </div>
+
+      <!-- Car Model & Colour -->
+      <div class="form-group">
+        <label>Car Model 车型</label>
+        <input type="text" id="carModelInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
+      </div>
+      <div class="form-group">
+        <label>Colour 颜色</label>
+        <input type="text" id="colourInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
+      </div>
+
+      <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
+      <div class="summary-card" id="summaryCard">
+        <div class="summary-card-title">📌 Informasi Riwayat Unit (Sign Off Audit)</div>
+        <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sumVin">-</span></div>
+        <div class="summary-item"><span class="summary-label">Terakhir Update:</span> <span id="sumDate">-</span></div>
+        <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sumInspect">-</span></div>
+        <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sumAfter">-</span></div>
+      </div>
+
+      <!-- 2. Problem Inspection Section -->
+      <div id="sectionInspect">
+        <div class="form-group">
+          <label>Problem Inspection 检验问题*</label>
+          <div class="checkbox-scroll-box">
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> <span>Gap</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> <span>Rash</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> <span>Flush</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> <span>Wavy</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> <span>Bending</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> <span>Dent Issue</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> <span>Crater</span></label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Problem Description Inspection 检验问题详细描述</label>
+          <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Problem Description Inspection 检验问题详细描述</label>
-        <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
-      </div>
-    </div>
+      <!-- 3. Problem After Inspection Section -->
+      <div id="sectionAfter">
+        <div class="form-group">
+          <label>Problem After Inspection 检验后问题*</label>
+          <div class="checkbox-scroll-box">
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> <span>Noise</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> <span>ADAS</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> <span>Electrical</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> <span>Mechanichal</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> <span>Change Part</span></label>
+            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> <span>Liquidity</span></label>
+          </div>
+        </div>
 
-    <!-- 3. Problem After Inspection Section -->
-    <div id="sectionAfter">
-      <div class="form-group">
-        <label>Problem After Inspection 检验后问题*</label>
-        <div class="checkbox-scroll-box">
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> Noise</label>
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> ADAS</label>
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> Electrical</label>
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> Mechanichal</label>
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> Change Part</label>
-          <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> Liquidity</label>
+        <div class="form-group">
+          <label>Problem Description After Inspection 检验后问题详细描述</label>
+          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Problem Description After Inspection 检验后问题详细描述</label>
-        <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
-      </div>
+      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
     </div>
-
-    <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
   </form>
 </div>
 
@@ -229,7 +254,7 @@
   </div>
 </div>
 
-<!-- Success Popup Layer (Locked Overlay) -->
+<!-- Success Popup Layer -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-card">
     <div class="check-circle">
@@ -245,11 +270,10 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzti_1Q1XeMLoPyFY7RsTIOvJ0n9mdmZkaYQR0aKkkRLrYzWjyNfPdvNvg-w95dVgmC1g/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXzXfMQTQAVGl92VqABSwi7Nz70dM2-fuL1BnybiQDOBNJ2m6OeFuX8063BlijbnnNBw/exec";
 
-  let globalVinData = null; // Menyimpan cache data VIN dari Google Sheet
+  let globalVinData = null;
 
-  // Realtime Date & Time
   function updateDateTime() {
     const now = new Date();
     document.getElementById('dateInput').value = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -258,26 +282,56 @@
   setInterval(updateDateTime, 1000);
   updateDateTime();
 
-  // Reset Checkbox Form
   function uncheckAllBoxes() {
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+      toggleStrikethrough(cb);
+    });
   }
 
-  // 1. CONTROL DUA SECTION & KARTU RINGKASAN BERDASARKAN STATION
+  // Effect Strikethrough saat Checkbox di-uncheck
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', function() {
+      toggleStrikethrough(this);
+    });
+  });
+
+  function toggleStrikethrough(checkboxElem) {
+    const parentLabel = checkboxElem.closest('.checkbox-item');
+    if (!parentLabel) return;
+
+    if (checkboxElem.checked) {
+      parentLabel.classList.remove('is-cleared');
+    } else {
+      // Jika di-uncheck, berikan garis coret
+      parentLabel.classList.add('is-cleared');
+    }
+  }
+
+  // 1. KONTROL UNBLUR & HIDE/SHOW SECTION BERDASARKAN STATION
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
     const station = document.getElementById('stationSelect').value.toUpperCase();
+    const blurArea = document.getElementById('formBlurArea');
     const secInspect = document.getElementById('sectionInspect');
     const secAfter = document.getElementById('sectionAfter');
     const summaryCard = document.getElementById('summaryCard');
 
+    if (!station) {
+      // Jika station belum dipilih -> KUNCI & BLUR SEMUA
+      blurArea.classList.add('is-blurred');
+      summaryCard.style.display = 'none';
+      return;
+    }
+
+    // Buka blur area
+    blurArea.classList.remove('is-blurred');
+
     if (station === 'SIGN OFF') {
-      // Buka kedua section untuk dicoret
       setSectionState(secInspect, true);
       setSectionState(secAfter, true);
 
-      // Tampilkan Summary Card jika VIN punya riwayat data
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
         document.getElementById('sumVin').innerText = globalVinData.vin;
         document.getElementById('sumDate').innerText = globalVinData.existingProblem.lastDate || "-";
@@ -322,7 +376,7 @@
     });
   }
 
-  // 2. Fetch Auto-Fill Car Model, Colour, & Load Problem Existing dari Google Sheet
+  // 2. FETCH MASTER DATA & CENTANG PROBLEM EXISTING
   function fetchMasterData(vin) {
     document.getElementById('carModelInput').value = "Mencari data VIN...";
     document.getElementById('colourInput').value = "Mencari data VIN...";
@@ -336,7 +390,7 @@
       if (document.body.contains(script)) document.body.removeChild(script);
 
       if (data.status === 'success') {
-        globalVinData = data; // Simpan ke memori global
+        globalVinData = data;
         document.getElementById('carModelInput').value = data.carModel || '-';
         document.getElementById('colourInput').value = data.colour || '-';
 
@@ -345,7 +399,6 @@
         setSectionState(document.getElementById('sectionInspect'), true);
         setSectionState(document.getElementById('sectionAfter'), true);
 
-        // OTO-CENTANGKAN PROBLEM DARI GOOGLE SHEET KE UI CHECKBOX
         if (data.existingProblem && data.existingProblem.found) {
           const pInspect = data.existingProblem.problemInspection || "";
           const pAfter = data.existingProblem.problemAfter || "";
@@ -354,7 +407,10 @@
             pInspect.split(',').forEach(item => {
               const val = item.trim();
               const box = document.querySelector(`input[name="probInsp"][value="${val}"]`);
-              if (box) box.checked = true;
+              if (box) {
+                box.checked = true;
+                toggleStrikethrough(box);
+              }
             });
           }
 
@@ -362,7 +418,10 @@
             pAfter.split(',').forEach(item => {
               const val = item.trim();
               const box = document.querySelector(`input[name="probAfter"][value="${val}"]`);
-              if (box) box.checked = true;
+              if (box) {
+                box.checked = true;
+                toggleStrikethrough(box);
+              }
             });
           }
         }
@@ -389,7 +448,7 @@
     document.body.appendChild(script);
   }
 
-  // 3. Quagga2 Camera Scanner Logic
+  // 3. Quagga2 Camera Scanner
   let isScanning = false;
 
   document.getElementById('openScanBtn').addEventListener('click', function() {
@@ -450,7 +509,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // 4. Submit Form Process
+  // 4. Submit Form
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -464,7 +523,6 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
-    // Mengambil pilihan problem yang masih tercentang
     const probInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value).join(', ');
     const probAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value).join(', ');
 
