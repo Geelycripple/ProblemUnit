@@ -157,15 +157,15 @@
 
     <!-- STATION PINTU UTAMA -->
     <div class="form-group station-box">
-      <label style="color:#2b6cb0;" id="stationLabel">1. Pilih Station 工位* (Pilih Dahulu)</label>
+      <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Station... / 请选择 --</option>
+        <option value="">-- PILIH POS DI BAWAH --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
         <option value="SIGN OFF">SIGN OFF</option>
       </select>
-      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:600; font-size:11px; margin-top:4px;">🔒 Station terkunci. Refresh halaman jika ingin mengganti station.</small>
+      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:600; font-size:11px; margin-top:4px;">🔒 REFRESH WE JIKA INGIN MENGGANTI POS ANDA</small>
     </div>
 
     <!-- AREA DENGAN EFEK BLUR SEBELUM STATION DIPILIH -->
@@ -181,11 +181,11 @@
       <!-- Car Model & Colour -->
       <div class="form-group">
         <label>Car Model 车型</label>
-        <input type="text" id="carModelInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
+        <input type="text" id="carModelInput" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
       <div class="form-group">
         <label>Colour 颜色</label>
-        <input type="text" id="colourInput" placeholder="Terisi otomatis dari MASTER DATA..." readonly>
+        <input type="text" id="colourInput" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
       <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
@@ -214,7 +214,7 @@
 
         <div class="form-group">
           <label>Problem Description Inspection 检验问题详细描述</label>
-          <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
+          <textarea id="descInspInput" rows="2" placeholder="Masukkan Detail Problem..."></textarea>
         </div>
       </div>
 
@@ -234,7 +234,7 @@
 
         <div class="form-group">
           <label>Problem Description After Inspection 检验后问题详细描述</label>
-          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
+          <textarea id="descAfterInput" rows="2" placeholder="Masukkan Detail Problem..."></textarea>
         </div>
       </div>
 
