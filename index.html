@@ -15,7 +15,7 @@
     .card { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
     h2 { text-align: center; font-size: 20px; margin-top: 0; margin-bottom: 20px; color: #1a202c; }
     
-    .form-group { margin-bottom: 16px; transition: opacity 0.2s ease; }
+    .form-group { margin-bottom: 16px; transition: all 0.2s ease; }
     label { font-size: 13px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 6px; }
     
     input[type="text"], select, textarea { 
@@ -33,6 +33,22 @@
     }
     .btn-scan:hover { background: #008f5a; }
 
+    /* Summary Card / Info Ringkasan SO */
+    .summary-card {
+      display: none;
+      background: #ebf8ff;
+      border: 1px solid #90cdf4;
+      border-radius: 12px;
+      padding: 12px 15px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #2b6cb0;
+    }
+    .summary-card-title { font-weight: 800; font-size: 14px; margin-bottom: 6px; color: #2c5282; border-bottom: 1px dashed #bee3f8; padding-bottom: 4px; }
+    .summary-item { margin-bottom: 4px; }
+    .summary-label { font-weight: 700; color: #2b6cb0; }
+    .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-block; margin-right: 4px; }
+
     /* Scrollable Multi Select Box */
     .checkbox-scroll-box {
       max-height: 180px; overflow-y: auto; border: 1px solid #cbd5e0; border-radius: 10px; padding: 8px; background: #faf5ff; display: flex; flex-direction: column; gap: 6px;
@@ -48,7 +64,7 @@
 
     /* Disabled Section Style */
     .section-disabled {
-      opacity: 0.45;
+      opacity: 0.4;
       pointer-events: none;
     }
 
@@ -147,6 +163,15 @@
       </select>
     </div>
 
+    <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
+    <div class="summary-card" id="summaryCard">
+      <div class="summary-card-title">📌 Informasi Riwayat Unit (Sign Off Audit)</div>
+      <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sumVin">-</span></div>
+      <div class="summary-item"><span class="summary-label">Terakhir Update:</span> <span id="sumDate">-</span></div>
+      <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sumInspect">-</span></div>
+      <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sumAfter">-</span></div>
+    </div>
+
     <!-- 2. Problem Inspection Section -->
     <div id="sectionInspect">
       <div class="form-group">
@@ -220,8 +245,9 @@
 </div>
 
 <script>
-  // ** MASUKKAN URL APPS SCRIPT ANDA DI SINI **
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2_8eZMYVEUgV7WU4d3LodWDZbL0-ZWWcjII1qRyLysyU70PhVkjqm8AxrW0RoKiQFqg/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzti_1Q1XeMLoPyFY7RsTIOvJ0n9mdmZkaYQR0aKkkRLrYzWjyNfPdvNvg-w95dVgmC1g/exec";
+
+  let globalVinData = null; // Menyimpan cache data VIN dari Google Sheet
 
   // Realtime Date & Time
   function updateDateTime() {
@@ -237,27 +263,50 @@
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
   }
 
-  // 1. LOGIKA CONTROL INPUT BERDASARKAN STATION Pilihan Operator
+  // 1. CONTROL DUA SECTION & KARTU RINGKASAN BERDASARKAN STATION
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
     const station = document.getElementById('stationSelect').value.toUpperCase();
     const secInspect = document.getElementById('sectionInspect');
     const secAfter = document.getElementById('sectionAfter');
+    const summaryCard = document.getElementById('summaryCard');
 
     if (station === 'SIGN OFF') {
-      // SIGN OFF: Buka kedua-duanya untuk memilah problem yang beres / dicoret
+      // Buka kedua section untuk dicoret
       setSectionState(secInspect, true);
       setSectionState(secAfter, true);
+
+      // Tampilkan Summary Card jika VIN punya riwayat data
+      if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
+        document.getElementById('sumVin').innerText = globalVinData.vin;
+        document.getElementById('sumDate').innerText = globalVinData.existingProblem.lastDate || "-";
+        
+        const pInsp = globalVinData.existingProblem.problemInspection || "-";
+        const pAft = globalVinData.existingProblem.problemAfter || "-";
+
+        document.getElementById('sumInspect').innerHTML = formatBadge(pInsp);
+        document.getElementById('sumAfter').innerHTML = formatBadge(pAft);
+
+        summaryCard.style.display = 'block';
+      } else {
+        summaryCard.style.display = 'none';
+      }
+
     } else if (station.includes('AFTER')) {
-      // AFTER INSPECTION: Hanya After Inspection yang Aktif
       setSectionState(secInspect, false);
       setSectionState(secAfter, true);
+      summaryCard.style.display = 'none';
     } else {
-      // INSPECTION (Atau station lain): Hanya Inspection yang Aktif
       setSectionState(secInspect, true);
       setSectionState(secAfter, false);
+      summaryCard.style.display = 'none';
     }
+  }
+
+  function formatBadge(probStr) {
+    if (!probStr || probStr === "-" || probStr === "PROBLEM DONE") return "<span style='color:green; font-weight:bold;'>PROBLEM DONE / OK</span>";
+    return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
   function setSectionState(sectionElem, isEnabled) {
@@ -287,24 +336,20 @@
       if (document.body.contains(script)) document.body.removeChild(script);
 
       if (data.status === 'success') {
+        globalVinData = data; // Simpan ke memori global
         document.getElementById('carModelInput').value = data.carModel || '-';
         document.getElementById('colourInput').value = data.colour || '-';
 
-        // Uncheck dulu semua pilihan awal
         uncheckAllBoxes();
 
-        // JIKA VIN MEMILIKI PROBLEM EXISTING DI SHEET, OTO-CENTANGKAN KE UI
+        setSectionState(document.getElementById('sectionInspect'), true);
+        setSectionState(document.getElementById('sectionAfter'), true);
+
+        // OTO-CENTANGKAN PROBLEM DARI GOOGLE SHEET KE UI CHECKBOX
         if (data.existingProblem && data.existingProblem.found) {
           const pInspect = data.existingProblem.problemInspection || "";
           const pAfter = data.existingProblem.problemAfter || "";
 
-          // Auto-select station jika sebelumnya pernah di-scan
-          if (data.existingProblem.station && !document.getElementById('stationSelect').value) {
-            document.getElementById('stationSelect').value = data.existingProblem.station;
-            handleStationControl();
-          }
-
-          // Centang problem Inspection yang aktif
           if (pInspect && pInspect !== "PROBLEM DONE") {
             pInspect.split(',').forEach(item => {
               const val = item.trim();
@@ -313,7 +358,6 @@
             });
           }
 
-          // Centang problem After Inspection yang aktif
           if (pAfter && pAfter !== "PROBLEM DONE") {
             pAfter.split(',').forEach(item => {
               const val = item.trim();
@@ -322,8 +366,12 @@
             });
           }
         }
+
+        handleStationControl();
+
       } else {
         alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
+        globalVinData = null;
         document.getElementById('carModelInput').value = "";
         document.getElementById('colourInput').value = "";
         document.getElementById('vinInput').value = "";
@@ -333,7 +381,7 @@
     script.onerror = function() {
       delete window[cbName];
       if (document.body.contains(script)) document.body.removeChild(script);
-      alert("Gagal terhubung ke Google Sheets untuk mengambil Data.");
+      alert("Gagal terhubung ke Google Sheets.");
       document.getElementById('carModelInput').value = "";
       document.getElementById('colourInput').value = "";
     };
@@ -416,7 +464,7 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
-    // Mengambil pilihan problem (jika dicoret/uncheck, otomatis tidak terambil)
+    // Mengambil pilihan problem yang masih tercentang
     const probInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value).join(', ');
     const probAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value).join(', ');
 
@@ -445,7 +493,6 @@
       submitBtn.innerText = "SUBMIT / 提交";
 
       if (res.status === 'success') {
-        // Tampilkan Custom Pop Up Overlay
         document.getElementById('displayVin').innerText = vin;
         document.getElementById('successOverlay').style.display = 'flex';
       } else {
@@ -464,16 +511,16 @@
     document.body.appendChild(script);
   });
 
-  // 5. + New Unit Report Button (Reset Form & Hide Overlay)
+  // 5. + New Unit Report Button
   document.getElementById('newReportBtn').addEventListener('click', function() {
     document.getElementById('problemForm').reset();
+    globalVinData = null;
     uncheckAllBoxes();
     handleStationControl();
     document.getElementById('successOverlay').style.display = 'none';
     updateDateTime();
   });
 
-  // Inisialisasi Kontrol Station saat Halaman Siap
   handleStationControl();
 </script>
 
