@@ -8,7 +8,7 @@
   <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
-  <!-- Import Google Fonts: Orbitron (Futuristic Title) & Rajdhani (Tech Body/Inputs) -->
+  <!-- Import Google Fonts: Orbitron & Rajdhani -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
@@ -34,7 +34,6 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); 
     }
     
-    /* Judul Utama Pakai Orbitron (Futuristic Tech) */
     h2 { 
       font-family: 'Orbitron', sans-serif;
       text-align: center; 
@@ -102,13 +101,8 @@
       text-align-last: center; 
     }
 
-    /* Centered Text for Specific Inputs */
-    .text-center-input {
-      text-align: center;
-    }
-    .text-center-input::placeholder {
-      text-align: center;
-    }
+    .text-center-input { text-align: center; }
+    .text-center-input::placeholder { text-align: center; }
 
     /* Blur & Disabled Area */
     .form-blur-area { transition: all 0.3s ease; }
@@ -140,30 +134,52 @@
     }
     .btn-scan:hover { background: #008f5a; }
 
-    /* Summary Card */
-    .summary-card {
+    /* SUMMARY CARD 1 (HISTORY IN AFTER INSPECTION OUT) */
+    .summary-card-1 {
       display: none;
       background: #ebf8ff;
       border: 1px solid #90cdf4;
       border-radius: 12px;
       padding: 12px 15px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       font-size: 14px;
       color: #2b6cb0;
     }
-    .summary-card-title { 
+    .summary-card-1 .title {
       font-family: 'Orbitron', sans-serif;
-      font-weight: 700; 
-      font-size: 13px; 
-      margin-bottom: 6px; 
-      color: #2c5282; 
-      border-bottom: 1px dashed #bee3f8; 
-      padding-bottom: 4px; 
-      letter-spacing: 0.5px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #2c5282;
+      border-bottom: 1px dashed #bee3f8;
+      padding-bottom: 4px;
     }
+
+    /* SUMMARY CARD 2 (STATUS AKTIF / BELUM DICORET) */
+    .summary-card-2 {
+      display: none;
+      background: #f0fff4;
+      border: 1px solid #9ae6b4;
+      border-radius: 12px;
+      padding: 12px 15px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #22543d;
+    }
+    .summary-card-2 .title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #276749;
+      border-bottom: 1px dashed #c6f6d5;
+      padding-bottom: 4px;
+    }
+
     .summary-item { margin-bottom: 4px; }
-    .summary-label { font-weight: 700; color: #2b6cb0; }
+    .summary-label { font-weight: 700; }
     .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 700; display: inline-block; margin-right: 4px; }
+    .badge-done { background: #c6f6d5; color: #22543d; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 800; display: inline-block; }
 
     /* Scrollable Multi Select Box */
     .checkbox-scroll-box {
@@ -186,7 +202,6 @@
       border-color: #cbd5e1;
     }
 
-    /* Style Khusus Section yang Dikunci/Disabled */
     .section-locked {
       filter: blur(2px);
       opacity: 0.35 !important;
@@ -271,7 +286,7 @@
       </div>
     </div>
 
-    <!-- STATION PINTU UTAMA (RATA TENGAH) -->
+    <!-- STATION PINTU UTAMA -->
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
@@ -304,13 +319,20 @@
         <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesual VIN" readonly>
       </div>
 
-      <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
-      <div class="summary-card" id="summaryCard">
-        <div class="summary-card-title">📌 Informasi Riwayat Unit (Sign Off Audit)</div>
-        <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sumVin">-</span></div>
-        <div class="summary-item"><span class="summary-label">Terakhir Update:</span> <span id="sumDate">-</span></div>
-        <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sumInspect">-</span></div>
-        <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sumAfter">-</span></div>
+      <!-- SUMMARY CARD 1: HISTORY AFTER INSPECTION OUT -->
+      <div class="summary-card-1" id="summaryCard1">
+        <div class="title">📌 Summary 1: History Problem (After Inspection Out)</div>
+        <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sum1Vin">-</span></div>
+        <div class="summary-item"><span class="summary-label">After Inspection Out:</span> <span id="sum1Date">-</span></div>
+        <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum1Inspect">-</span></div>
+        <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum1After">-</span></div>
+      </div>
+
+      <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
+      <div class="summary-card-2" id="summaryCard2">
+        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
+        <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
+        <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
 
       <!-- 2. Problem Inspection Section -->
@@ -387,7 +409,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk5J6t0PInLBe_GGx4brllfvc6NYk3dQTgbEeEYEK4tEjt6GtPr3TMNBFGw5mkkYWCGQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8lmxZ8OfgRO0K_Y6Ws34WQ5DTStCYMqPnbE5KbH3c2iWgIn__FQY2KbLMvh4J1YMMow/exec";
 
   let globalVinData = null;
 
@@ -406,10 +428,11 @@
     });
   }
 
-  // Strikethrough Effect
+  // Update real-time Summary Card 2 saat operator uncheck problem
   document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.addEventListener('change', function() {
       toggleStrikethrough(this);
+      updateSummaryCard2Live();
     });
   });
 
@@ -424,7 +447,19 @@
     }
   }
 
-  // 1. KONTROL MUTLAK PENGUNCIAN KEDUA SECTION
+  // Update Summary Card 2 berdasarkan centang aktif di UI
+  function updateSummaryCard2Live() {
+    const currentStation = document.getElementById('stationSelect').value.toUpperCase();
+    if (currentStation !== 'SIGN OFF') return;
+
+    const activeInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value);
+    const activeAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value);
+
+    document.getElementById('sum2Inspect').innerHTML = formatBadge(activeInsp.join(', '));
+    document.getElementById('sum2After').innerHTML = formatBadge(activeAfter.join(', '));
+  }
+
+  // 1. KONTROL LOCK STATION & UNBLUR FORM
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
@@ -433,15 +468,16 @@
     const blurArea = document.getElementById('formBlurArea');
     const secInspect = document.getElementById('sectionInspect');
     const secAfter = document.getElementById('sectionAfter');
-    const summaryCard = document.getElementById('summaryCard');
+    const card1 = document.getElementById('summaryCard1');
+    const card2 = document.getElementById('summaryCard2');
 
     if (!station) {
       blurArea.classList.add('is-blurred');
-      summaryCard.style.display = 'none';
+      card1.style.display = 'none';
+      card2.style.display = 'none';
       return;
     }
 
-    // Lock dropdown station
     stationElem.disabled = true;
     document.getElementById('lockNotice').style.display = 'block';
     blurArea.classList.remove('is-blurred');
@@ -451,24 +487,34 @@
       setSectionLock(secAfter, false);
 
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
-        document.getElementById('sumVin').innerText = globalVinData.vin;
-        document.getElementById('sumDate').innerText = globalVinData.existingProblem.lastDate || "-";
-        document.getElementById('sumInspect').innerHTML = formatBadge(globalVinData.existingProblem.problemInspection || "-");
-        document.getElementById('sumAfter').innerHTML = formatBadge(globalVinData.existingProblem.problemAfter || "-");
-        summaryCard.style.display = 'block';
+        // Populate Summary Card 1 (History Awal)
+        document.getElementById('sum1Vin').innerText = globalVinData.vin;
+        document.getElementById('sum1Date').innerText = globalVinData.existingProblem.lastDate || "-";
+        document.getElementById('sum1Inspect').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryInspect || "-");
+        document.getElementById('sum1After').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryAfter || "-");
+
+        // Populate Summary Card 2 (Problem Aktif dari Sheet)
+        document.getElementById('sum2Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
+        document.getElementById('sum2After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
+
+        card1.style.display = 'block';
+        card2.style.display = 'block';
       } else {
-        summaryCard.style.display = 'none';
+        card1.style.display = 'none';
+        card2.style.display = 'none';
       }
 
     } else if (station.includes('AFTER')) {
       setSectionLock(secInspect, true);
       setSectionLock(secAfter, false);
-      summaryCard.style.display = 'none';
+      card1.style.display = 'none';
+      card2.style.display = 'none';
 
     } else {
       setSectionLock(secInspect, false);
       setSectionLock(secAfter, true);
-      summaryCard.style.display = 'none';
+      card1.style.display = 'none';
+      card2.style.display = 'none';
     }
   }
 
@@ -486,7 +532,9 @@
   }
 
   function formatBadge(probStr) {
-    if (!probStr || probStr === "-" || probStr === "PROBLEM DONE") return "<span style='color:green; font-weight:bold;'>PROBLEM DONE / OK</span>";
+    if (!probStr || probStr === "-" || probStr === "" || probStr === "PROBLEM DONE") {
+      return '<span class="badge-done">✅ PROBLEM DONE</span>';
+    }
     return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
@@ -510,12 +558,13 @@
 
         uncheckAllBoxes();
 
+        // CENTANG KHUSUS PROBLEM AKTIF YANG BELUM DICORET DI GOOGLE SHEET
         if (data.existingProblem && data.existingProblem.found) {
-          const pInspect = data.existingProblem.problemInspection || "";
-          const pAfter = data.existingProblem.problemAfter || "";
+          const actInsp = data.existingProblem.activeInspect || "";
+          const actAfter = data.existingProblem.activeAfter || "";
 
-          if (pInspect && pInspect !== "PROBLEM DONE") {
-            pInspect.split(',').forEach(item => {
+          if (actInsp && actInsp !== "PROBLEM DONE") {
+            actInsp.split(',').forEach(item => {
               const val = item.trim();
               const box = document.querySelector(`input[name="probInsp"][value="${val}"]`);
               if (box) {
@@ -525,8 +574,8 @@
             });
           }
 
-          if (pAfter && pAfter !== "PROBLEM DONE") {
-            pAfter.split(',').forEach(item => {
+          if (actAfter && actAfter !== "PROBLEM DONE") {
+            actAfter.split(',').forEach(item => {
               const val = item.trim();
               const box = document.querySelector(`input[name="probAfter"][value="${val}"]`);
               if (box) {
