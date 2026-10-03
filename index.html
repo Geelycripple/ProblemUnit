@@ -27,8 +27,28 @@
     .row-2 { display: flex; gap: 10px; }
     .row-2 > div { flex: 1; }
 
-    /* Highlight Station Box */
-    .station-box { background: #edf2f7; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e0; margin-bottom: 16px; }
+    /* Highlight Station Box & Alignment Center */
+    .station-box { 
+      background: #edf2f7; 
+      padding: 12px; 
+      border-radius: 12px; 
+      border: 2px solid #cbd5e0; 
+      margin-bottom: 16px; 
+      text-align: center; 
+    }
+    .station-box label { text-align: center; }
+    .station-box select { 
+      text-align: center; 
+      text-align-last: center; 
+    }
+
+    /* Centered Text for Specific Inputs */
+    .text-center-input {
+      text-align: center;
+    }
+    .text-center-input::placeholder {
+      text-align: center;
+    }
 
     /* Blur & Disabled Area */
     .form-blur-area { transition: all 0.3s ease; }
@@ -147,25 +167,25 @@
     <div class="row-2">
       <div class="form-group">
         <label>Date 日期*</label>
-        <input type="text" id="dateInput" readonly>
+        <input type="text" id="dateInput" class="text-center-input" readonly>
       </div>
       <div class="form-group">
         <label>Time 时间*</label>
-        <input type="text" id="timeInput" readonly>
+        <input type="text" id="timeInput" class="text-center-input" readonly>
       </div>
     </div>
 
-    <!-- STATION PINTU UTAMA -->
+    <!-- STATION PINTU UTAMA (RATA TENGAH) -->
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- PILIH POS DI BAWAH --</option>
+        <option value="">-- Pilih Pos Anda... / 请选择 --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
         <option value="SIGN OFF">SIGN OFF</option>
       </select>
-      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:600; font-size:11px; margin-top:4px;">🔒 REFRESH WE JIKA INGIN MENGGANTI POS ANDA</small>
+      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:600; font-size:11px; margin-top:4px; text-align:center;">🔒 REFRESH WEB JIKA INGIN MENGGANTI POS ANDA</small>
     </div>
 
     <!-- AREA DENGAN EFEK BLUR SEBELUM STATION DIPILIH -->
@@ -175,17 +195,17 @@
       <div class="form-group">
         <label>VIN NO 车架号*</label>
         <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
-        <input type="text" id="vinInput" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
+        <input type="text" id="vinInput" class="text-center-input" placeholder="Hasil Scan VIN akan muncul di sini" readonly required>
       </div>
 
       <!-- Car Model & Colour -->
       <div class="form-group">
         <label>Car Model 车型</label>
-        <input type="text" id="carModelInput" placeholder="Terisi Otomatis Sesuai VIN" readonly>
+        <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis" readonly>
       </div>
       <div class="form-group">
         <label>Colour 颜色</label>
-        <input type="text" id="colourInput" placeholder="Terisi Otomatis Sesuai VIN" readonly>
+        <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis" readonly>
       </div>
 
       <!-- KOLOM RINGKASAN PROBLEM (MUNCUL KHUSUS SAAT SIGN OFF) -->
@@ -214,7 +234,7 @@
 
         <div class="form-group">
           <label>Problem Description Inspection 检验问题详细描述</label>
-          <textarea id="descInspInput" rows="2" placeholder="Masukkan Detail Problem..."></textarea>
+          <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
@@ -234,7 +254,7 @@
 
         <div class="form-group">
           <label>Problem Description After Inspection 检验后问题详细描述</label>
-          <textarea id="descAfterInput" rows="2" placeholder="Masukkan Detail Problem..."></textarea>
+          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
@@ -271,7 +291,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu2Tk_9ufvbSbaSVeICQPwCXAkrvsJuijtKYva7OqTKL-v8xB-7VCRMt_rNF8u-lxB/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAzVEZH2U7h3oNRNebxUjSjYPzPhSIB_SFYRPgBDm7O1_eAQv8SZs4ZjBxTf9HUt1X/exec";
 
   let globalVinData = null;
 
@@ -331,7 +351,6 @@
     blurArea.classList.remove('is-blurred');
 
     if (station === 'SIGN OFF') {
-      // SIGN OFF: BUKA DUA-DUANYA
       setSectionLock(secInspect, false);
       setSectionLock(secAfter, false);
 
@@ -346,20 +365,17 @@
       }
 
     } else if (station.includes('AFTER')) {
-      // AFTER INSPECTION: KUNCI INSPECTION, BUKA AFTER INSPECTION
       setSectionLock(secInspect, true);
       setSectionLock(secAfter, false);
       summaryCard.style.display = 'none';
 
     } else {
-      // INSPECTION: BUKA INSPECTION, KUNCI AFTER INSPECTION
       setSectionLock(secInspect, false);
       setSectionLock(secAfter, true);
       summaryCard.style.display = 'none';
     }
   }
 
-  // Fungsi khusus untuk mengunci/membuka section secara mutlak
   function setSectionLock(sectionElem, isLocked) {
     if (isLocked) {
       sectionElem.classList.add('section-locked');
@@ -398,7 +414,6 @@
 
         uncheckAllBoxes();
 
-        // CENTANG PROBLEM EXISTING DARI GOOGLE SHEET
         if (data.existingProblem && data.existingProblem.found) {
           const pInspect = data.existingProblem.problemInspection || "";
           const pAfter = data.existingProblem.problemAfter || "";
@@ -426,7 +441,6 @@
           }
         }
 
-        // PAKSA JALANKAN KONTROL STATION LAGI AGAR BAGIAN TERKUNCI TIDAK BISA DIPILIH SAMA SEKALI
         handleStationControl();
 
       } else {
@@ -575,7 +589,6 @@
     window.location.reload();
   });
 
-  // Inisialisasi awal
   handleStationControl();
 </script>
 
