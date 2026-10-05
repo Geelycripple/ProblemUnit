@@ -516,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda... --</option>
+        <option value="">-- Pilih Pos Anda --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -556,7 +556,7 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif: Berhasil Repair/Tambahan Problem</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -623,18 +623,6 @@
               <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
               <div class="cat-btn-subtext" id="subtext_EOL"></div>
             </button>
-            <button type="button" class="category-card-btn" data-cat="Electrical" data-section="after">
-              <div class="cat-btn-title"><span>Electrical</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Electrical"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Mechanichal" data-section="after">
-              <div class="cat-btn-title"><span>Mechanichal</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Mechanichal"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Change Part" data-section="after">
-              <div class="cat-btn-title"><span>Change Part</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Change Part"></div>
-            </button>
           </div>
 
           <div class="signoff-checkbox-list" id="signoffAfterList" style="display:none;"></div>
@@ -642,13 +630,14 @@
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER (HANYA MUNCUL DI AFTER INSPECTION & SIGN OFF) -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️ PRAJUDGEMENT APM ⚠️</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
+        <div class="pra-title">⚠️️PRAJUDGEMENT⚠️</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus judgement APM</div>
       </div>
 
-      <!-- TOMBOL SUBMIT KELUAR DARI SECTION (TETAP AKTIF DAN BISA DIKLIK) -->
-      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
-    </div>
+    </div> <!-- AKHIR DIV FORM-BLUR-AREA -->
+
+    <!-- TOMBOL SUBMIT KINI DITARUH TERPISAH DI LUAR DIV BLUR DENGAN ID submitBtn -->
+    <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
   </form>
 </div>
 
@@ -689,7 +678,7 @@
 
     <!-- 3. Deskripsi Problem -->
     <div class="form-group">
-      <label>3. Deskripsi Problem Menunggu Judgement APM*</label>
+      <label>3. Deskripsi Masalah harus Judgement APM*</label>
       <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely"></textarea>
     </div>
 
@@ -1105,7 +1094,10 @@
 
     const buttons = sectionElem.querySelectorAll('button, textarea');
     buttons.forEach(btn => {
-      btn.disabled = isLocked;
+      // Tombol Submit dikecualikan agar tidak pernah terkunci
+      if (btn.id !== 'submitBtn') {
+        btn.disabled = isLocked;
+      }
     });
   }
 
