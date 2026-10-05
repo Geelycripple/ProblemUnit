@@ -392,7 +392,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda... / 请选择 --</option>
+        <option value="">-- Pilih Pos Anda --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -482,7 +482,7 @@
       <!-- 3. Problem After Inspection Section (Category Grid Buttons) -->
       <div id="sectionAfter">
         <div class="form-group">
-          <label>Problem After Inspection 检验后问题*</label>
+          <label>Problem After Inspection*</label>
           
           <!-- Mode Operator: Category Card Buttons Grid -->
           <div class="category-grid" id="gridAfterCategory">
@@ -502,31 +502,13 @@
               <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
               <div class="cat-btn-subtext" id="subtext_EOL"></div>
             </button>
-            <button type="button" class="category-card-btn" data-cat="Electrical" data-section="after">
-              <div class="cat-btn-title"><span>Electrical</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Electrical"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Mechanichal" data-section="after">
-              <div class="cat-btn-title"><span>Mechanichal</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Mechanichal"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Change Part" data-section="after">
-              <div class="cat-btn-title"><span>Change Part</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Change Part"></div>
-            </button>
           </div>
 
           <!-- Mode Sign Off Audit (Tampil Checkbox Coret) -->
           <div class="signoff-checkbox-list" id="signoffAfterList" style="display:none;"></div>
         </div>
 
-        <div class="form-group">
-          <label>Problem Description After Inspection 检验后问题详细描述</label>
-          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi opsional..."></textarea>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
+      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
     </div>
   </form>
 </div>
