@@ -5,480 +5,102 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem System</title>
   
-  <!-- Engine Quagga2 Khusus Barcode 1D -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
-  <!-- Import Google Fonts: Orbitron & Rajdhani -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { 
-      box-sizing: border-box; 
-      font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    }
-    body { 
-      background-color: #f0f2f5; 
-      margin: 0; 
-      padding: 15px; 
-      color: #2d3748; 
-    }
-    
-    .card { 
-      background: #ffffff; 
-      border-radius: 16px; 
-      padding: 20px; 
-      max-width: 480px; 
-      margin: 0 auto; 
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); 
-    }
-    
-    h2 { 
-      font-family: 'Orbitron', sans-serif;
-      text-align: center; 
-      font-size: 20px; 
-      font-weight: 800;
-      letter-spacing: 1px;
-      margin-top: 0; 
-      margin-bottom: 20px; 
-      color: #1a202c; 
-      text-transform: uppercase;
-    }
-    
-    .form-group { margin-bottom: 16px; transition: all 0.3s ease; }
-    label { 
-      font-size: 14px; 
-      font-weight: 700; 
-      color: #4a5568; 
-      display: block; 
-      margin-bottom: 6px; 
-      letter-spacing: 0.5px;
-    }
-    
-    input[type="text"], select, textarea, button { 
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 600;
-      font-size: 15px;
-      letter-spacing: 0.5px;
-    }
-
-    input[type="text"], select, textarea { 
-      width: 100%; 
-      padding: 12px; 
-      border: 1px solid #cbd5e0; 
-      border-radius: 10px; 
-      background-color: #ffffff; 
-      color: #2d3748; 
-      outline: none; 
-      transition: all 0.2s;
-    }
-    input[readonly], select:disabled, textarea:disabled { 
-      background-color: #edf2f7; 
-      color: #4a5568; 
-      cursor: not-allowed; 
-    }
-    input[type="text"]:focus, select:focus, textarea:focus { 
-      border-color: #3182ce; 
-      box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); 
-    }
-
+    * { box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+    body { background-color: #f0f2f5; margin: 0; padding: 15px; color: #2d3748; }
+    .card { background: #ffffff; border-radius: 16px; padding: 20px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    h2 { font-family: 'Orbitron', sans-serif; text-align: center; font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 20px; color: #1a202c; text-transform: uppercase; }
+    .form-group { margin-bottom: 16px; }
+    label { font-size: 14px; font-weight: 700; color: #4a5568; display: block; margin-bottom: 6px; }
+    input[type="text"], select, textarea, button { font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 15px; }
+    input[type="text"], select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 10px; background-color: #ffffff; color: #2d3748; outline: none; }
+    input[readonly], select:disabled { background-color: #edf2f7; color: #4a5568; cursor: not-allowed; }
     .row-2 { display: flex; gap: 10px; }
     .row-2 > div { flex: 1; }
-
-    /* Highlight Station Box */
-    .station-box { 
-      background: #edf2f7; 
-      padding: 12px; 
-      border-radius: 12px; 
-      border: 2px solid #cbd5e0; 
-      margin-bottom: 16px; 
-      text-align: center; 
-    }
-    .station-box label { text-align: center; }
-    .station-box select { 
-      text-align: center; 
-      text-align-last: center; 
-    }
-
+    .station-box { background: #edf2f7; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e0; margin-bottom: 16px; text-align: center; }
+    .station-box select { text-align: center; text-align-last: center; }
     .text-center-input { text-align: center; }
-    .text-center-input::placeholder { text-align: center; }
-
-    /* Blur & Disabled Area */
     .form-blur-area { transition: all 0.3s ease; }
-    .is-blurred {
-      filter: blur(4px);
-      opacity: 0.3;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    /* Button Scan */
-    .btn-scan { 
-      width: 100%; 
-      padding: 12px; 
-      background: #00a86b; 
-      color: white; 
-      border: none; 
-      border-radius: 10px; 
-      font-size: 15px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8px; 
-      margin-bottom: 8px; 
-      transition: background 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .btn-scan:hover { background: #008f5a; }
-
-    /* SUMMARY CARDS */
-    .summary-card-1 {
-      display: none;
-      background: #ebf8ff;
-      border: 1px solid #90cdf4;
-      border-radius: 12px;
-      padding: 12px 15px;
-      margin-bottom: 12px;
-      font-size: 14px;
-      color: #2b6cb0;
-    }
-    .summary-card-1 .title {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 6px;
-      color: #2c5282;
-      border-bottom: 1px dashed #bee3f8;
-      padding-bottom: 4px;
-    }
-
-    .summary-card-2 {
-      display: none;
-      background: #f0fff4;
-      border: 1px solid #9ae6b4;
-      border-radius: 12px;
-      padding: 12px 15px;
-      margin-bottom: 16px;
-      font-size: 14px;
-      color: #22543d;
-    }
-    .summary-card-2 .title {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 6px;
-      color: #276749;
-      border-bottom: 1px dashed #c6f6d5;
-      padding-bottom: 4px;
-    }
-
+    .is-blurred { filter: blur(4px); opacity: 0.3; pointer-events: none; user-select: none; }
+    .btn-scan { width: 100%; padding: 12px; background: #00a86b; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
+    
+    .summary-card-1 { display: none; background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 12px; padding: 12px 15px; margin-bottom: 12px; font-size: 14px; color: #2b6cb0; }
+    .summary-card-1 .title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: #2c5282; border-bottom: 1px dashed #bee3f8; padding-bottom: 4px; }
+    .summary-card-2 { display: none; background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 12px; padding: 12px 15px; margin-bottom: 16px; font-size: 14px; color: #22543d; }
+    .summary-card-2 .title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: #276749; border-bottom: 1px dashed #c6f6d5; padding-bottom: 4px; }
     .summary-item { margin-bottom: 4px; }
-    .summary-label { font-weight: 700; }
-    .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 700; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
+    .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 700; display: inline-block; margin-right: 4px; }
     .badge-done { background: #c6f6d5; color: #22543d; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 800; display: inline-block; }
 
-    /* DESAIN KATEGORI MODERN (CARD BUTTON GRID) */
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 8px;
-    }
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 8px; }
+    .category-card-btn { background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; text-align: left; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; }
+    .category-card-btn.active { background: #eff6ff; border-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+    .cat-btn-title { font-weight: 800; font-size: 14px; color: #1e293b; display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .category-card-btn.active .cat-btn-title { color: #1d4ed8; }
+    .cat-btn-subtext { font-size: 11px; color: #2563eb; font-weight: 700; margin-top: 4px; word-break: break-word; }
+    .cat-indicator { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; margin-left: auto; flex-shrink: 0; }
+    .category-card-btn.active .cat-indicator { background: #2563eb; box-shadow: 0 0 8px #2563eb; }
 
-    .category-card-btn {
-      background: #f8fafc;
-      border: 2px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 10px 12px;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      position: relative;
-    }
+    .prajudgement-trigger-card { background: #fffbebfb; border: 2px dashed #f59e0b; border-radius: 12px; padding: 12px; margin-top: 10px; margin-bottom: 12px; text-align: center; cursor: pointer; }
+    .prajudgement-trigger-card.has-data { background: #dcfce7; border: 2px solid #16a34a; }
+    .pra-title { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 800; color: #b45309; }
+    .prajudgement-trigger-card.has-data .pra-title { color: #15803d; }
+    .pra-subtitle { font-size: 12px; color: #78350f; font-weight: 600; margin-top: 4px; }
 
-    .category-card-btn:hover {
-      border-color: #3b82f6;
-      background: #f1f5f9;
-    }
+    .section-locked { filter: blur(2px); opacity: 0.35 !important; pointer-events: none !important; }
+    .btn-submit { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 15px; }
 
-    .category-card-btn.active {
-      background: #eff6ff;
-      border-color: #2563eb;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-    }
-
-    /* PUSAT PERBAIKAN: Dibuat Flex Space-Between & Lebar 100% */
-    .cat-btn-title {
-      font-weight: 800;
-      font-size: 14px;
-      color: #1e293b;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .category-card-btn.active .cat-btn-title {
-      color: #1d4ed8;
-    }
-
-    .cat-btn-subtext {
-      font-size: 11px;
-      color: #2563eb;
-      font-weight: 700;
-      margin-top: 4px;
-      word-break: break-word;
-    }
-
-    /* PUSAT PERBAIKAN: Bulatan terdorong ke paling kanan */
-    .cat-indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #cbd5e1;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-
-    .category-card-btn.active .cat-indicator {
-      background: #2563eb;
-      box-shadow: 0 0 8px #2563eb;
-    }
-
-    /* DESAIN TOMBOL PRAJUDGEMENT CARD */
-    .prajudgement-trigger-card {
-      background: #fffbebfb;
-      border: 2px dashed #f59e0b;
-      border-radius: 12px;
-      padding: 12px;
-      margin-top: 10px;
-      margin-bottom: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .prajudgement-trigger-card:hover {
-      background: #fef3c7;
-      border-style: solid;
-    }
-    .prajudgement-trigger-card.has-data {
-      background: #dcfce7;
-      border: 2px solid #16a34a;
-    }
-
-    .pra-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 14px;
-      font-weight: 800;
-      color: #b45309;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .prajudgement-trigger-card.has-data .pra-title {
-      color: #15803d;
-    }
-
-    .pra-subtitle {
-      font-size: 12px;
-      color: #78350f;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    .section-locked {
-      filter: blur(2px);
-      opacity: 0.35 !important;
-      pointer-events: none !important;
-      user-select: none !important;
-    }
-
-    /* Submit Button */
-    .btn-submit { 
-      width: 100%; 
-      padding: 14px; 
-      background: #2563eb; 
-      color: white; 
-      border: none; 
-      border-radius: 10px; 
-      font-size: 17px; 
-      font-weight: 700; 
-      letter-spacing: 1px;
-      cursor: pointer; 
-      margin-top: 15px; 
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); 
-      transition: all 0.2s;
-    }
-    .btn-submit:hover { background: #1d4ed8; }
-    .btn-submit:disabled { background: #a0aec0; cursor: not-allowed; box-shadow: none; }
-
-    /* POP-UP MODAL SUB-CATEGORY */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 9999; padding: 15px;
-    }
-    .modal-card {
-      background: #ffffff; width: 100%; max-width: 440px;
-      border-radius: 16px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-      animation: popupAnim 0.25s ease-out;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-title {
-      font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 800;
-      color: #1e293b; margin-top: 0; margin-bottom: 6px;
-      border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 15px; }
+    .modal-card { background: #ffffff; width: 100%; max-width: 440px; border-radius: 16px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 800; color: #1e293b; margin-top: 0; margin-bottom: 6px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
     .modal-subtitle { font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600; }
-    .modal-parts-box {
-      max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
-    }
-    .modal-part-item {
-      display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px;
-      background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer;
-    }
-    .modal-part-item:hover { background: #edf2f7; }
+    .modal-parts-box { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .modal-part-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer; }
     .modal-part-item input { width: 18px; height: 18px; accent-color: #2563eb; }
     .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
     .btn-modal-cancel { background: #cbd5e1; color: #334155; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
     .btn-modal-save { background: #2563eb; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
-    /* CAMERA & EVIDENCE STYLES */
-    .evidence-box {
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 12px;
-      background: #f8fafc;
-    }
-    .evidence-header {
-      font-size: 13px;
-      font-weight: 700;
-      color: #334155;
-      margin-bottom: 6px;
-    }
-    .btn-cam-trigger {
-      width: 100%;
-      padding: 10px;
-      background: #0284c7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .img-preview {
-      width: 100%;
-      max-height: 140px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-top: 8px;
-      display: none;
-      border: 2px solid #0284c7;
-    }
+    .evidence-box { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; margin-bottom: 12px; background: #f8fafc; }
+    .evidence-header { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .btn-cam-trigger { width: 100%; padding: 10px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .img-preview { width: 100%; max-height: 140px; object-fit: cover; border-radius: 8px; margin-top: 8px; display: none; }
 
-    /* FULLSCREEN CAMERA MODAL */
-    .fullscreen-cam-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000;
-      z-index: 10000;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .cam-video-stream {
-      width: 100%;
-      height: 80vh;
-      object-fit: cover;
-    }
-    .cam-controls {
-      height: 20vh;
-      width: 100%;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      padding: 0 20px;
-    }
-    .btn-shutter {
-      width: 65px; height: 65px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 4px solid #cbd5e1;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(255,255,255,0.5);
-    }
-    .btn-cancel-cam {
-      background: #e11d48;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 700;
-    }
+    .fullscreen-cam-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 10000; flex-direction: column; justify-content: space-between; align-items: center; }
+    .cam-video-stream { width: 100%; height: 80vh; object-fit: cover; }
+    .cam-controls { height: 20vh; width: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: space-around; padding: 0 20px; }
+    .btn-shutter { width: 65px; height: 65px; border-radius: 50%; background: #ffffff; border: 4px solid #cbd5e1; cursor: pointer; }
+    .btn-cancel-cam { background: #e11d48; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; }
 
-    /* Modal Scanner Barcode VIN */
     .modal-scanner { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; padding: 15px; }
-    .scanner-card { background: white; width: 100%; max-width: 420px; border-radius: 16px; padding: 15px; text-align: center; position: relative; }
-    
-    #interactive.viewport {
-      width: 100%; height: 250px; border-radius: 10px; overflow: hidden; position: relative; background: #000;
-    }
+    .scanner-card { background: white; width: 100%; max-width: 420px; border-radius: 16px; padding: 15px; text-align: center; }
+    #interactive.viewport { width: 100%; height: 250px; border-radius: 10px; overflow: hidden; position: relative; background: #000; }
     #interactive.viewport video { width: 100%; height: 100%; object-fit: cover; }
-    #interactive.viewport canvas { display: none; }
-    
-    .scan-guide-line {
-      position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: red; box-shadow: 0 0 8px red; z-index: 10; transform: translateY(-50%); pointer-events: none;
-    }
-
+    .scan-guide-line { position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: red; z-index: 10; transform: translateY(-50%); }
     .btn-close-scanner { margin-top: 12px; width: 100%; padding: 10px; background: #e53e3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-    /* Success Popup Layer */
-    .success-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
-    }
-    .success-card {
-      background: #ffffff; width: 100%; max-width: 380px; border-radius: 24px; padding: 35px 25px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: popupAnim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    @keyframes popupAnim { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-    .check-circle {
-      width: 90px; height: 90px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;
-    }
+    .success-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+    .success-card { background: #ffffff; width: 100%; max-width: 380px; border-radius: 24px; padding: 35px 25px; text-align: center; }
+    .check-circle { width: 90px; height: 90px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; }
     .check-circle svg { width: 45px; height: 45px; stroke: #16a34a; }
-
-    .submitted-vin { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 800; color: #15803d; margin-bottom: 4px; word-break: break-all; }
+    .submitted-vin { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 800; color: #15803d; margin-bottom: 4px; }
     .submitted-title { font-size: 18px; font-weight: 700; color: #16a34a; margin-bottom: 8px; }
-    .submitted-sub { font-size: 13px; color: #64748b; margin-bottom: 25px; font-weight: 500; }
-
-    .btn-new-report {
-      width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); transition: background 0.2s;
-    }
-    .btn-new-report:hover { background: #1d4ed8; }
+    .submitted-sub { font-size: 13px; color: #64748b; margin-bottom: 25px; }
+    .btn-new-report { width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <div class="card">
-  <h2>UNIT PROBLEM TRACKING</h2>
+  <h2>UNIT PROBLEM GEELY</h2>
   
   <form id="problemForm">
-    <!-- Date & Time -->
     <div class="row-2">
       <div class="form-group">
         <label>Date*</label>
@@ -490,30 +112,25 @@
       </div>
     </div>
 
-    <!-- STATION PINTU UTAMA -->
     <div class="form-group station-box">
-      <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
+      <label style="color:#2b6cb0;">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">---== Pilih Pos Anda ==---</option>
+        <option value="">----== Pilih Pos Anda ==----</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
         <option value="SIGN OFF">SIGN OFF</option>
       </select>
-      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:700; font-size:12px; margin-top:4px; text-align:center;">🔒 REFRESH WEB JIKA INGIN MENGGANTI POS ANDA</small>
+      <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:700; font-size:12px; margin-top:4px;">🔒 REFRESH WEB JIKA INGIN MENGGANTI POS ANDA</small>
     </div>
 
-    <!-- AREA DENGAN EFEK BLUR SEBELUM STATION DIPILIH -->
     <div class="form-blur-area is-blurred" id="formBlurArea">
-
-      <!-- VIN & Scan Barcode -->
       <div class="form-group">
         <label>VIN NO*</label>
         <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
         <input type="text" id="vinInput" class="text-center-input" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
       </div>
 
-      <!-- Car Model & Colour -->
       <div class="form-group">
         <label>Car Model</label>
         <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
@@ -523,7 +140,6 @@
         <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
-      <!-- SUMMARY CARD 1: HISTORY AFTER INSPECTION OUT -->
       <div class="summary-card-1" id="summaryCard1">
         <div class="title">📌 Summary 1: History Problem (After Inspection Out)</div>
         <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sum1Vin">-</span></div>
@@ -532,83 +148,45 @@
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum1After">-</span></div>
       </div>
 
-      <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif </div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
 
-      <!-- 2. Problem Inspection Section (Category Grid Buttons) -->
       <div id="sectionInspect">
         <div class="form-group">
           <label>Problem Inspection*</label>
-          
           <div class="category-grid" id="gridInspCategory">
-            <button type="button" class="category-card-btn" data-cat="Gap" data-section="inspect">
-              <div class="cat-btn-title"><span>Gap</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Gap"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Rash" data-section="inspect">
-              <div class="cat-btn-title"><span>Rash</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Rash"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Flush" data-section="inspect">
-              <div class="cat-btn-title"><span>Flush</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Flush"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Wavy" data-section="inspect">
-              <div class="cat-btn-title"><span>Wavy</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Wavy"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Bending" data-section="inspect">
-              <div class="cat-btn-title"><span>Bending</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Bending"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Dent Issue" data-section="inspect">
-              <div class="cat-btn-title"><span>Dent Issue</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Dent Issue"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Crater" data-section="inspect">
-              <div class="cat-btn-title"><span>Crater</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Crater"></div>
-            </button>
+            <button type="button" class="category-card-btn" data-cat="Gap" data-section="inspect"><div class="cat-btn-title"><span>Gap</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Gap"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Rash" data-section="inspect"><div class="cat-btn-title"><span>Rash</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Rash"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Flush" data-section="inspect"><div class="cat-btn-title"><span>Flush</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Flush"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Wavy" data-section="inspect"><div class="cat-btn-title"><span>Wavy</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Wavy"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Bending" data-section="inspect"><div class="cat-btn-title"><span>Bending</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Bending"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Dent Issue" data-section="inspect"><div class="cat-btn-title"><span>Dent Issue</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Dent Issue"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Crater" data-section="inspect"><div class="cat-btn-title"><span>Crater</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Crater"></div></button>
           </div>
         </div>
       </div>
 
-      <!-- 3. Problem After Inspection Section (Category Grid Buttons) -->
       <div id="sectionAfter">
         <div class="form-group">
           <label>Problem After Inspection*</label>
-          
           <div class="category-grid" id="gridAfterCategory">
-            <button type="button" class="category-card-btn" data-cat="Noise" data-section="after">
-              <div class="cat-btn-title"><span>Noise</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Noise"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="ADAS" data-section="after">
-              <div class="cat-btn-title"><span>ADAS</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_ADAS"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="Leaking" data-section="after">
-              <div class="cat-btn-title"><span>Leaking</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_Leaking"></div>
-            </button>
-            <button type="button" class="category-card-btn" data-cat="EOL" data-section="after">
-              <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
-              <div class="cat-btn-subtext" id="subtext_EOL"></div>
-            </button>
+            <button type="button" class="category-card-btn" data-cat="Noise" data-section="after"><div class="cat-btn-title"><span>Noise</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Noise"></div></button>
+            <button type="button" class="category-card-btn" data-cat="ADAS" data-section="after"><div class="cat-btn-title"><span>ADAS</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_ADAS"></div></button>
+            <button type="button" class="category-card-btn" data-cat="Leaking" data-section="after"><div class="cat-btn-title"><span>Leaking</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Leaking"></div></button>
+            <button type="button" class="category-card-btn" data-cat="EOL" data-section="after"><div class="cat-btn-title"><span>EOL</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_EOL"></div></button>
           </div>
         </div>
-
-      <!-- 4. PRAJUDGEMENT CARD TRIGGER -->
-      <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️ APM PRAJUDGEMENT CLAIM</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
       </div>
 
-    </div> <!-- AKHIR FORM BLUR AREA -->
+      <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
+        <div class="pra-title">⚠️PRAJUDGEMENT⚠️</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus Judgement APM</div>
+      </div>
+
+    </div>
 
     <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
   </form>
@@ -617,11 +195,9 @@
 <!-- POP-UP MODAL SUB-CATEGORY -->
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA / PROBLEM SPESIFIK</div>
+    <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA SPESIFIK</div>
     <div class="modal-subtitle">Pilih area spesifik:</div>
-    
     <div class="modal-parts-box" id="modalPartsList"></div>
-
     <div class="modal-actions">
       <button type="button" class="btn-modal-cancel" id="btnCancelModal">Batal</button>
       <button type="button" class="btn-modal-save" id="btnSaveModal">Simpan Pilihan</button>
@@ -629,32 +205,25 @@
   </div>
 </div>
 
-<!-- POP-UP MODAL PRAJUDGEMENT EVIDENCE FORM -->
+<!-- PRAJUDGEMENT MODAL -->
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" style="color:#b45309;">⚠️ APM PRAJUDGEMENT EVIDENCE</div>
+    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
-    
-    <!-- 1. Foto Checksheet BIP -->
     <div class="evidence-box">
       <div class="evidence-header">1. Foto Bukti Checksheet BIP*</div>
       <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('bip')">📷 Ambil Foto CheckSheet BIP</button>
       <img id="previewBip" class="img-preview" alt="Preview BIP">
     </div>
-
-    <!-- 2. Foto Checksheet Final Inspection -->
     <div class="evidence-box">
       <div class="evidence-header">2. Foto Bukti CheckSheet Final Inspection*</div>
       <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('final')">📷 Ambil Foto Final Inspection</button>
       <img id="previewFinal" class="img-preview" alt="Preview Final">
     </div>
-
-    <!-- 3. Deskripsi Problem -->
     <div class="form-group">
       <label>3. Deskripsi Masalah Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely..."></textarea>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah"></textarea>
     </div>
-
     <div class="modal-actions">
       <button type="button" class="btn-modal-cancel" onclick="closePraModal()">Batal</button>
       <button type="button" class="btn-modal-save" style="background:#b45309;" onclick="savePraData()">Simpan Evidence</button>
@@ -662,7 +231,6 @@
   </div>
 </div>
 
-<!-- FULLSCREEN CAMERA UNTUK BUKTI CHECKSHEET -->
 <div class="fullscreen-cam-modal" id="fullscreenCamModal">
   <video id="fullCamVideo" class="cam-video-stream" autoplay playsinline></video>
   <div class="cam-controls">
@@ -672,26 +240,17 @@
   <canvas id="hiddenCanvas" style="display:none;"></canvas>
 </div>
 
-<!-- Modal Scanner Barcode VIN -->
 <div class="modal-scanner" id="scannerModal">
   <div class="scanner-card">
-    <h3 style="font-family:'Orbitron',sans-serif; margin-top:0; margin-bottom:10px; font-size:16px;">Scan Barcode VIN</h3>
-    <div id="interactive" class="viewport">
-      <div class="scan-guide-line"></div>
-    </div>
-    <p style="font-size:12px; color:#718096; margin:8px 0 0 0;">Arahkan garis merah horizontal tepat di tengah-tengah barcode.</p>
+    <h3 style="font-family:'Orbitron',sans-serif; margin-top:0; margin-bottom:10px;">Scan Barcode VIN</h3>
+    <div id="interactive" class="viewport"><div class="scan-guide-line"></div></div>
     <button type="button" class="btn-close-scanner" id="closeScanBtn">Tutup Kamera</button>
   </div>
 </div>
 
-<!-- Success Popup Layer -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-card">
-    <div class="check-circle">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-      </svg>
-    </div>
+    <div class="check-circle"><svg viewBox="0 0 24 24" fill="none" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
     <div class="submitted-vin" id="displayVin">VIN_NUMBER</div>
     <div class="submitted-title">Berhasil Terdata</div>
     <div class="submitted-sub">Report Anda Sudah Terkirim ke Google Sheet</div>
@@ -700,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPMPGvJS6e3OvUMEnMGqaAv9s46kYutu9WNdZF1PJeogJB7oKo2Bcy8etd-C3jYyM/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbytqAfOkncoeuNYFTC4ESucLual7f5ssUkeT7dH8qlgcU8a43l745kF3KWqeInAiukZaw/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -715,21 +274,13 @@
     "ADAS": ["XCU DTC", "BMC DTC", "FCS", "OBD", "HUD DTC", "RES", "NG"],
     "Leaking": ["Area Tailgate", "Area Floor Front", "Area Floor Center", "Area Floor Rear", "Area Roof RH", "Area Roof LH", "Area Front Windshield"],
     "EOL": ["SWDL NG", "ECOS NG"],
-    "Electrical": ["Harness Issue", "Sensor Issue", "Display Screen", "Switch Issue"],
-    "Mechanichal": ["Brake System", "Suspension", "Underbody Tightening"],
-    "Change Part": ["Part Damaged", "Part Missing", "Wrong Part"]
   };
 
   let globalVinData = null;
   let subSelections = {}; 
   let activeCategoryBtn = null;
 
-  let praData = {
-    active: false,
-    imgBip: "",
-    imgFinal: "",
-    description: ""
-  };
+  let praData = { active: false, imgBip: "", imgFinal: "", description: "" };
   let currentCamTarget = "";
   let camStream = null;
 
@@ -743,25 +294,21 @@
 
   function resetAllSelections() {
     subSelections = {};
-    document.querySelectorAll('.category-card-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
+    document.querySelectorAll('.category-card-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.cat-btn-subtext').forEach(div => div.innerText = "");
-    
     praData = { active: false, imgBip: "", imgFinal: "", description: "" };
     updatePraCardUI();
   }
 
   document.querySelectorAll('.category-card-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      const categoryName = this.getAttribute('data-cat');
       activeCategoryBtn = this;
-      openSubCategoryModal(categoryName);
+      openSubCategoryModal(this.getAttribute('data-cat'));
     });
   });
 
   function openSubCategoryModal(categoryName) {
-    document.getElementById('modalCategoryTitle').innerText = `${categoryName.toUpperCase()} - PILIH AREA / PROBLEM SPESIFIK`;
+    document.getElementById('modalCategoryTitle').innerText = `${categoryName.toUpperCase()} - PILIH AREA SPESIFIK`;
     const container = document.getElementById('modalPartsList');
     container.innerHTML = "";
 
@@ -797,7 +344,6 @@
 
     document.getElementById('subCategoryModal').style.display = 'none';
     activeCategoryBtn = null;
-
     updateSummaryCard2Live();
   });
 
@@ -808,26 +354,21 @@
 
   function renderSubtext(categoryName, partsList) {
     const el = document.getElementById(`subtext_${categoryName}`);
-    if (el) {
-      el.innerText = partsList.length > 0 ? partsList.join(', ') : "";
-    }
+    if (el) el.innerText = partsList.length > 0 ? partsList.join(', ') : "";
   }
 
   document.getElementById('praJudgementCard').addEventListener('click', function() {
     document.getElementById('praModal').style.display = 'flex';
   });
 
-  function closePraModal() {
-    document.getElementById('praModal').style.display = 'none';
-  }
+  function closePraModal() { document.getElementById('praModal').style.display = 'none'; }
 
   function savePraData() {
     const desc = document.getElementById('praDescriptionInput').value.trim();
     if (!praData.imgBip || !praData.imgFinal || !desc) {
-      alert("⚠️️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
       return;
     }
-
     praData.description = desc;
     praData.active = true;
     updatePraCardUI();
@@ -837,7 +378,6 @@
   function updatePraCardUI() {
     const card = document.getElementById('praJudgementCard');
     const statusText = document.getElementById('praStatusText');
-
     if (praData.active) {
       card.classList.add('has-data');
       statusText.innerHTML = "✅ <b>Evidence Terisi Complete!</b> (Klik untuk mengubah)";
@@ -849,9 +389,7 @@
 
   function openFullscreenCam(target) {
     currentCamTarget = target;
-    const camModal = document.getElementById('fullscreenCamModal');
-    camModal.style.display = 'flex';
-
+    document.getElementById('fullscreenCamModal').style.display = 'flex';
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: { exact: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }
     }).then(stream => {
@@ -866,9 +404,7 @@
   }
 
   function closeFullscreenCam() {
-    if (camStream) {
-      camStream.getTracks().forEach(track => track.stop());
-    }
+    if (camStream) camStream.getTracks().forEach(track => track.stop());
     document.getElementById('fullscreenCamModal').style.display = 'none';
   }
 
@@ -877,24 +413,19 @@
     const canvas = document.getElementById('hiddenCanvas');
     canvas.width = video.videoWidth || 1280;
     canvas.height = video.videoHeight || 720;
-
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
     const base64Img = canvas.toDataURL('image/jpeg', 0.85);
 
     if (currentCamTarget === 'bip') {
       praData.imgBip = base64Img;
       const prev = document.getElementById('previewBip');
-      prev.src = base64Img;
-      prev.style.display = 'block';
+      prev.src = base64Img; prev.style.display = 'block';
     } else if (currentCamTarget === 'final') {
       praData.imgFinal = base64Img;
       const prev = document.getElementById('previewFinal');
-      prev.src = base64Img;
-      prev.style.display = 'block';
+      prev.src = base64Img; prev.style.display = 'block';
     }
-
     closeFullscreenCam();
   }
 
@@ -925,10 +456,7 @@
       if (subSelections[category] && subSelections[category].length > 0) {
         descText = subSelections[category].map(part => `${category} ${part}`).join(', ');
       }
-      results.push({
-        category: category,
-        description: descText
-      });
+      results.push({ category: category, description: descText });
     });
     return results;
   }
@@ -969,8 +497,8 @@
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
         document.getElementById('sum1Vin').innerText = globalVinData.vin;
         document.getElementById('sum1Date').innerText = globalVinData.existingProblem.lastDate || "-";
-        document.getElementById('sum1Inspect').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryInspect || "-");
-        document.getElementById('sum1After').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryAfter || "-");
+        document.getElementById('sum1Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
+        document.getElementById('sum1After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
 
         document.getElementById('sum2Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
         document.getElementById('sum2After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
@@ -978,8 +506,9 @@
         card1.style.display = 'block';
         card2.style.display = 'block';
 
-        autoHighlightActiveCards(globalVinData.existingProblem.activeInspect, 'inspect');
-        autoHighlightActiveCards(globalVinData.existingProblem.activeAfter, 'after');
+        // Auto-Highlight Kartu & Auto-Populate Sub-Selections dari Database!
+        autoPopulateSubSelections(globalVinData.existingProblem.inspectMap, 'inspect');
+        autoPopulateSubSelections(globalVinData.existingProblem.afterMap, 'after');
       } else {
         card1.style.display = 'none';
         card2.style.display = 'none';
@@ -999,30 +528,30 @@
     }
   }
 
-  function autoHighlightActiveCards(probStr, sectionName) {
-    if (!probStr || probStr === "PROBLEM DONE") return;
-    const catList = probStr.split(',').map(s => s.trim());
+  // POPULASI OTOMATIS KARTU & AREA PROBLEM DARI DATABASE SUPAYA POPUP TERCEKLIS LENGKAP
+  function autoPopulateSubSelections(probMap, sectionName) {
+    if (!probMap) return;
 
-    document.querySelectorAll(`.category-card-btn[data-section="${sectionName}"]`).forEach(btn => {
-      const catName = btn.getAttribute('data-cat');
-      if (catList.includes(catName)) {
-        btn.classList.add('active');
+    Object.keys(probMap).forEach(categoryName => {
+      const parts = probMap[categoryName];
+      if (parts && parts.length > 0) {
+        subSelections[categoryName] = parts;
+        
+        const btn = document.querySelector(`.category-card-btn[data-section="${sectionName}"][data-cat="${categoryName}"]`);
+        if (btn) {
+          btn.classList.add('active');
+          renderSubtext(categoryName, parts);
+        }
       }
     });
   }
 
   function setSectionLock(sectionElem, isLocked) {
-    if (isLocked) {
-      sectionElem.classList.add('section-locked');
-    } else {
-      sectionElem.classList.remove('section-locked');
-    }
+    if (isLocked) sectionElem.classList.add('section-locked');
+    else sectionElem.classList.remove('section-locked');
 
-    const buttons = sectionElem.querySelectorAll('button, textarea');
-    buttons.forEach(btn => {
-      if (btn.id !== 'submitBtn') {
-        btn.disabled = isLocked;
-      }
+    sectionElem.querySelectorAll('button, textarea').forEach(btn => {
+      if (btn.id !== 'submitBtn') btn.disabled = isLocked;
     });
   }
 
@@ -1066,15 +595,12 @@
       delete window[cbName];
       if (document.body.contains(script)) document.body.removeChild(script);
       alert("Gagal terhubung ke Google Sheets.");
-      document.getElementById('carModelInput').value = "";
-      document.getElementById('colourInput').value = "";
     };
 
     document.body.appendChild(script);
   }
 
   let isScanning = false;
-
   document.getElementById('openScanBtn').addEventListener('click', function() {
     document.getElementById('scannerModal').style.display = 'flex';
     startQuagga();
@@ -1082,39 +608,21 @@
 
   function startQuagga() {
     if (isScanning) return;
-
     Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#interactive'),
-        constraints: {
-          facingMode: "environment",
-          width: { min: 640, ideal: 1280 },
-          height: { min: 480, ideal: 720 }
-        }
-      },
+      inputStream: { name: "Live", type: "LiveStream", target: document.querySelector('#interactive'), constraints: { facingMode: "environment" } },
       locator: { patchSize: "medium", halfSample: true },
       numOfWorkers: 2,
-      decoder: { readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader"] },
-      locate: true
+      decoder: { readers: ["code_128_reader", "code_39_reader", "code_39_vin_reader"] }
     }, function(err) {
-      if (err) {
-        alert("Gagal menginisialisasi kamera: " + err);
-        stopQuagga();
-        return;
-      }
-      isScanning = true;
-      Quagga.start();
+      if (err) { alert("Gagal menginisialisasi kamera: " + err); stopQuagga(); return; }
+      isScanning = true; Quagga.start();
     });
-
     Quagga.offDetected(onDetected);
     Quagga.onDetected(onDetected);
   }
 
   function onDetected(result) {
     if (!result || !result.codeResult || !result.codeResult.code) return;
-    
     const code = result.codeResult.code.trim();
     if (code.length >= 5) {
       document.getElementById('vinInput').value = code;
@@ -1124,25 +632,17 @@
   }
 
   function stopQuagga() {
-    if (isScanning) {
-      Quagga.stop();
-      isScanning = false;
-    }
+    if (isScanning) { Quagga.stop(); isScanning = false; }
     document.getElementById('scannerModal').style.display = 'none';
   }
-
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const vin = document.getElementById('vinInput').value;
-    if (!vin) {
-      alert("Silakan scan VIN terlebih dahulu!");
-      return;
-    }
+    if (!vin) { alert("Silakan scan VIN terlebih dahulu!"); return; }
 
-    const currentStation = document.getElementById('stationSelect').value.toUpperCase();
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
@@ -1150,8 +650,6 @@
     try {
       const inspectItems = documentSelectedObjects('inspect');
       const afterItems = documentSelectedObjects('after');
-      const descAfterElem = document.getElementById('descAfterInput');
-      const safeDescAfter = (descAfterElem && !descAfterElem.disabled) ? descAfterElem.value.trim() : "";
 
       const payload = {
         action: 'saveData',
@@ -1163,7 +661,6 @@
         
         inspectItems: inspectItems,
         afterItems: afterItems,
-        extraDescAfter: safeDescAfter,
 
         isPraJudgement: praData.active,
         imgBip: praData.active ? praData.imgBip : "",
