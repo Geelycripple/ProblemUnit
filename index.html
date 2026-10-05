@@ -516,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda --</option>
+        <option value="">---= Pilih Pos Anda =---</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -556,7 +556,7 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -636,8 +636,8 @@
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️ APM PRAJUDGEMENT CLAIM</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
+        <div class="pra-title">---⚠️PRAJUDGEMENT⚠️---</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus Judgement APM</div>
       </div>
 
     </div> <!-- AKHIR FORM BLUR AREA -->
@@ -650,7 +650,7 @@
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
     <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA / PROBLEM SPESIFIK</div>
-    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
+    <div class="modal-subtitle">Pilih area spesifik:</div>
     
     <div class="modal-parts-box" id="modalPartsList"></div>
 
@@ -664,7 +664,7 @@
 <!-- POP-UP MODAL PRAJUDGEMENT EVIDENCE FORM -->
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" style="color:#b45309;">⚠️ APM PRAJUDGEMENT EVIDENCE</div>
+    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
     
     <!-- 1. Foto Checksheet BIP -->
@@ -683,8 +683,8 @@
 
     <!-- 3. Deskripsi Problem -->
     <div class="form-group">
-      <label>3. Deskripsi Masalah Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely..."></textarea>
+      <label>3. Deskripsi Masalah membutuhkan Judgement APM*</label>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely"></textarea>
     </div>
 
     <div class="modal-actions">
@@ -732,7 +732,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFAX4EaA8CPcxGGG9RE2mD8q5QIDdIHuz7IMRBPGinxTBJ70jsyR8OLu3cyQ-6ZXP44Q/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye5DF1u-ETsbV8DQNnUQwiTqoGV8gohieozRqJUqEJSk2GGLsUOxPe60t-PYFp7mbwLw/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -995,19 +995,19 @@
     return list;
   }
 
+  // LOGIKA DIPERBAIKI: Mengambil daftar deskripsi spesifik PER-KATEGORI (Bukan digabung jadi 1 textjoin)
   function getRepetitiveDescriptionList(sectionName) {
     const descArray = [];
     document.querySelectorAll(`.category-card-btn[data-section="${sectionName}"].active`).forEach(btn => {
       const category = btn.getAttribute('data-cat');
       if (subSelections[category] && subSelections[category].length > 0) {
-        subSelections[category].forEach(part => {
-          descArray.push(`${category} ${part}`);
-        });
+        const parts = subSelections[category].map(part => `${category} ${part}`).join(', ');
+        descArray.push(parts);
       } else {
         descArray.push(category);
       }
     });
-    return descArray.join(', ');
+    return descArray; // Retun array per kategori
   }
 
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
@@ -1212,7 +1212,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // SUBMIT FORM AMAN
+  // SUBMIT FORM DENGAN PEMISAHAN KATEGORI DAN DESKRIPSI LURUS
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -1227,10 +1227,10 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
-    let probInspCategoryOnly = "";
-    let probInspRepetitiveDesc = "";
-    let probAfterCategoryOnly = "";
-    let probAfterRepetitiveDesc = "";
+    let probInspCategoryOnly = [];
+    let probInspRepetitiveDesc = [];
+    let probAfterCategoryOnly = [];
+    let probAfterRepetitiveDesc = [];
 
     try {
       if (currentStation === 'SIGN OFF') {
@@ -1238,20 +1238,19 @@
         const checkedAfterElements = document.querySelectorAll('#signoffAfterList input:checked');
 
         if (checkedInspElements) {
-          probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value).join(', ');
+          probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value);
         }
         if (checkedAfterElements) {
-          probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value).join(', ');
+          probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value);
         }
       } else {
-        probInspCategoryOnly = getSelectedCategoryList('inspect').join(', ');
+        probInspCategoryOnly = getSelectedCategoryList('inspect');
         probInspRepetitiveDesc = getRepetitiveDescriptionList('inspect');
 
-        probAfterCategoryOnly = getSelectedCategoryList('after').join(', ');
+        probAfterCategoryOnly = getSelectedCategoryList('after');
         probAfterRepetitiveDesc = getRepetitiveDescriptionList('after');
       }
 
-      // Safe-read deskripsi After Inspection
       const descAfterElem = document.getElementById('descAfterInput');
       const safeDescAfter = (descAfterElem && !descAfterElem.disabled) ? descAfterElem.value.trim() : "";
 
@@ -1262,12 +1261,13 @@
         carModel: document.getElementById('carModelInput').value,
         colour: document.getElementById('colourInput').value,
         station: document.getElementById('stationSelect').value,
+        
+        // Dikirim dalam bentuk Array agar Apps Script bisa memecahnya per-baris (Row)
         problemInspection: probInspCategoryOnly, 
         descInspection: probInspRepetitiveDesc, 
         problemAfter: probAfterCategoryOnly,
-        descAfter: probAfterRepetitiveDesc || safeDescAfter,
+        descAfter: probAfterRepetitiveDesc.length > 0 ? probAfterRepetitiveDesc : (safeDescAfter ? [safeDescAfter] : []),
         
-        // Hanya kirim praJudgement jika aktif
         isPraJudgement: praData.active,
         imgBip: praData.active ? praData.imgBip : "",
         imgFinal: praData.active ? praData.imgFinal : "",
