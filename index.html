@@ -516,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda --</option>
+        <option value="">-- Pilih Pos Anda... --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -556,7 +556,7 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif: Berhasil Repair/Tambahan Problem</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -630,13 +630,13 @@
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER (HANYA MUNCUL DI AFTER INSPECTION & SIGN OFF) -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️️PRAJUDGEMENT⚠️</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus judgement APM</div>
+        <div class="pra-title">⚠️PRAJUDGEMENT⚠️</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus Judgement APM</div>
       </div>
 
     </div> <!-- AKHIR DIV FORM-BLUR-AREA -->
 
-    <!-- TOMBOL SUBMIT KINI DITARUH TERPISAH DI LUAR DIV BLUR DENGAN ID submitBtn -->
+    <!-- TOMBOL SUBMIT DITARUH DI LUAR AREA BLUR -->
     <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
   </form>
 </div>
@@ -645,7 +645,7 @@
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
     <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA / PROBLEM SPESIFIK</div>
-    <div class="modal-subtitle">Pilih area spesifik:</div>
+    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
     
     <div class="modal-parts-box" id="modalPartsList"></div>
 
@@ -659,7 +659,7 @@
 <!-- POP-UP MODAL PRAJUDGEMENT EVIDENCE FORM -->
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
+    <div class="modal-title" style="color:#b45309;">⚠️ APM PRAJUDGEMENT EVIDENCE</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
     
     <!-- 1. Foto Checksheet BIP -->
@@ -678,8 +678,8 @@
 
     <!-- 3. Deskripsi Problem -->
     <div class="form-group">
-      <label>3. Deskripsi Masalah harus Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely"></textarea>
+      <label>3. Deskripsi Masalah Judgement APM*</label>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely..."></textarea>
     </div>
 
     <div class="modal-actions">
@@ -727,7 +727,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzroM2PsxDBT8o82Zj_VTtPl5knz8-HPhl86Mz8Qsj02THpj5TlT1jjHlBLJt-W2iFQ3Q/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8rvNlusdutKfGxBJgWy4LFtnrgCgBKIFtUhOB4OHfxe-M3XgM69mZ6XXUq_wQi49lRg/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -1094,7 +1094,6 @@
 
     const buttons = sectionElem.querySelectorAll('button, textarea');
     buttons.forEach(btn => {
-      // Tombol Submit dikecualikan agar tidak pernah terkunci
       if (btn.id !== 'submitBtn') {
         btn.disabled = isLocked;
       }
@@ -1208,6 +1207,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
+  // SUBMIT FORM DENGAN LOGIKA SAFE-READ PER POS
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -1227,10 +1227,19 @@
     let probAfterCategoryOnly = "";
     let probAfterRepetitiveDesc = "";
 
+    // PERBAIKAN LOGIKA: Hanya baca checkbox Sign Off bila pos murni SIGN OFF
     if (currentStation === 'SIGN OFF') {
-      probInspCategoryOnly = Array.from(document.querySelectorAll('#signoffInspList input:checked')).map(c => c.value).join(', ');
-      probAfterCategoryOnly = Array.from(document.querySelectorAll('#signoffAfterList input:checked')).map(c => c.value).join(', ');
+      const checkedInspElements = document.querySelectorAll('#signoffInspList input:checked');
+      const checkedAfterElements = document.querySelectorAll('#signoffAfterList input:checked');
+
+      if (checkedInspElements) {
+        probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value).join(', ');
+      }
+      if (checkedAfterElements) {
+        probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value).join(', ');
+      }
     } else {
+      // Untuk pos INSPECTION, IN TESTLINE, & AFTER INSPECTION
       probInspCategoryOnly = getSelectedCategoryList('inspect').join(', ');
       probInspRepetitiveDesc = getRepetitiveDescriptionList('inspect');
 
