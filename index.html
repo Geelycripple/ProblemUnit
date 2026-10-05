@@ -246,33 +246,6 @@
       box-shadow: 0 0 8px #2563eb;
     }
 
-    /* Style Khusus Mode Checkbox Sign Off */
-    .signoff-checkbox-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .signoff-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .signoff-item.is-cleared {
-      background: #f1f5f9;
-      color: #94a3b8;
-      text-decoration: line-through;
-    }
-
     /* DESAIN TOMBOL PRAJUDGEMENT CARD */
     .prajudgement-trigger-card {
       background: #fffbebfb;
@@ -516,7 +489,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">---= Pilih Pos Anda =---</option>
+        <option value="">-- Pilih Pos Anda... --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -556,7 +529,7 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -596,8 +569,6 @@
               <div class="cat-btn-subtext" id="subtext_Crater"></div>
             </button>
           </div>
-
-          <div class="signoff-checkbox-list" id="signoffInspList" style="display:none;"></div>
         </div>
       </div>
 
@@ -623,21 +594,12 @@
               <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
               <div class="cat-btn-subtext" id="subtext_EOL"></div>
             </button>
-          </div>
-
-          <div class="signoff-checkbox-list" id="signoffAfterList" style="display:none;"></div>
-        </div>
-
-        <div class="form-group">
-          <label>Problem Description After Inspection</label>
-          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi opsional..."></textarea>
-        </div>
       </div>
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">---⚠️PRAJUDGEMENT⚠️---</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus Judgement APM</div>
+        <div class="pra-title">⚠️ APM PRAJUDGEMENT CLAIM</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
       </div>
 
     </div> <!-- AKHIR FORM BLUR AREA -->
@@ -664,7 +626,7 @@
 <!-- POP-UP MODAL PRAJUDGEMENT EVIDENCE FORM -->
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
+    <div class="modal-title" style="color:#b45309;">⚠️ APM PRAJUDGEMENT EVIDENCE</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
     
     <!-- 1. Foto Checksheet BIP -->
@@ -683,8 +645,8 @@
 
     <!-- 3. Deskripsi Problem -->
     <div class="form-group">
-      <label>3. Deskripsi Masalah membutuhkan Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely"></textarea>
+      <label>3. Deskripsi Masalah Judgement APM*</label>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely..."></textarea>
     </div>
 
     <div class="modal-actions">
@@ -732,7 +694,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbye5DF1u-ETsbV8DQNnUQwiTqoGV8gohieozRqJUqEJSk2GGLsUOxPe60t-PYFp7mbwLw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTud6jEisqJSEtJQYhBvIeeaDadXmk5tC0EkSG0l1FLO7_L7wlPLQxyH6KTlFo7j-PEw/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -779,8 +741,6 @@
       btn.classList.remove('active');
     });
     document.querySelectorAll('.cat-btn-subtext').forEach(div => div.innerText = "");
-    document.getElementById('signoffInspList').innerHTML = "";
-    document.getElementById('signoffAfterList').innerHTML = "";
     
     praData = { active: false, imgBip: "", imgFinal: "", description: "" };
     updatePraCardUI();
@@ -831,6 +791,8 @@
 
     document.getElementById('subCategoryModal').style.display = 'none';
     activeCategoryBtn = null;
+
+    updateSummaryCard2Live();
   });
 
   document.getElementById('btnCancelModal').addEventListener('click', function() {
@@ -930,58 +892,12 @@
     closeFullscreenCam();
   }
 
-  function renderSignOffCheckboxes() {
-    const inspContainer = document.getElementById('signoffInspList');
-    const afterContainer = document.getElementById('signoffAfterList');
-    
-    inspContainer.innerHTML = "";
-    afterContainer.innerHTML = "";
-
-    if (!globalVinData || !globalVinData.existingProblem || !globalVinData.existingProblem.found) return;
-
-    const actInsp = globalVinData.existingProblem.activeInspect || "";
-    const actAfter = globalVinData.existingProblem.activeAfter || "";
-
-    if (actInsp && actInsp !== "PROBLEM DONE") {
-      actInsp.split(',').forEach(item => {
-        const val = item.trim();
-        if (val) {
-          const label = document.createElement('label');
-          label.className = 'signoff-item';
-          label.innerHTML = `<input type="checkbox" name="soInsp" value="${val}" checked> <span>${val}</span>`;
-          inspContainer.appendChild(label);
-        }
-      });
-    }
-
-    if (actAfter && actAfter !== "PROBLEM DONE") {
-      actAfter.split(',').forEach(item => {
-        const val = item.trim();
-        if (val) {
-          const label = document.createElement('label');
-          label.className = 'signoff-item';
-          label.innerHTML = `<input type="checkbox" name="soAfter" value="${val}" checked> <span>${val}</span>`;
-          afterContainer.appendChild(label);
-        }
-      });
-    }
-
-    document.querySelectorAll('.signoff-item input').forEach(cb => {
-      cb.addEventListener('change', function() {
-        const parent = this.closest('.signoff-item');
-        if (this.checked) parent.classList.remove('is-cleared');
-        else parent.classList.add('is-cleared');
-        updateSummaryCard2Live();
-      });
-    });
-  }
-
   function updateSummaryCard2Live() {
     const currentStation = document.getElementById('stationSelect').value.toUpperCase();
     if (currentStation !== 'SIGN OFF') return;
 
-    const activeInsp = Array.from(document.querySelectorAll('#signoffInspList input:checked')).map(c => c.value);
-    const activeAfter = Array.from(document.querySelectorAll('#signoffAfterList input:checked')).map(c => c.value);
+    const activeInsp = getSelectedCategoryList('inspect');
+    const activeAfter = getSelectedCategoryList('after');
 
     document.getElementById('sum2Inspect').innerHTML = formatBadge(activeInsp.join(', '));
     document.getElementById('sum2After').innerHTML = formatBadge(activeAfter.join(', '));
@@ -995,19 +911,20 @@
     return list;
   }
 
-  // LOGIKA DIPERBAIKI: Mengambil daftar deskripsi spesifik PER-KATEGORI (Bukan digabung jadi 1 textjoin)
-  function getRepetitiveDescriptionList(sectionName) {
-    const descArray = [];
+  function documentSelectedObjects(sectionName) {
+    const results = [];
     document.querySelectorAll(`.category-card-btn[data-section="${sectionName}"].active`).forEach(btn => {
       const category = btn.getAttribute('data-cat');
+      let descText = category;
       if (subSelections[category] && subSelections[category].length > 0) {
-        const parts = subSelections[category].map(part => `${category} ${part}`).join(', ');
-        descArray.push(parts);
-      } else {
-        descArray.push(category);
+        descText = subSelections[category].map(part => `${category} ${part}`).join(', ');
       }
+      results.push({
+        category: category,
+        description: descText
+      });
     });
-    return descArray; // Retun array per kategori
+    return results;
   }
 
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
@@ -1020,11 +937,6 @@
     const secAfter = document.getElementById('sectionAfter');
     const card1 = document.getElementById('summaryCard1');
     const card2 = document.getElementById('summaryCard2');
-
-    const gridInsp = document.getElementById('gridInspCategory');
-    const gridAfter = document.getElementById('gridAfterCategory');
-    const soInspList = document.getElementById('signoffInspList');
-    const soAfterList = document.getElementById('signoffAfterList');
     const praCard = document.getElementById('praJudgementCard');
 
     if (!station) {
@@ -1048,13 +960,6 @@
       setSectionLock(secInspect, false);
       setSectionLock(secAfter, false);
 
-      gridInsp.style.display = 'none';
-      gridAfter.style.display = 'none';
-      soInspList.style.display = 'flex';
-      soAfterList.style.display = 'flex';
-
-      renderSignOffCheckboxes();
-
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
         document.getElementById('sum1Vin').innerText = globalVinData.vin;
         document.getElementById('sum1Date').innerText = globalVinData.existingProblem.lastDate || "-";
@@ -1066,17 +971,15 @@
 
         card1.style.display = 'block';
         card2.style.display = 'block';
+
+        autoHighlightActiveCards(globalVinData.existingProblem.activeInspect, 'inspect');
+        autoHighlightActiveCards(globalVinData.existingProblem.activeAfter, 'after');
       } else {
         card1.style.display = 'none';
         card2.style.display = 'none';
       }
 
     } else {
-      gridInsp.style.display = 'grid';
-      gridAfter.style.display = 'grid';
-      soInspList.style.display = 'none';
-      soAfterList.style.display = 'none';
-
       if (station.includes('AFTER')) {
         setSectionLock(secInspect, true);
         setSectionLock(secAfter, false);
@@ -1088,6 +991,18 @@
       card1.style.display = 'none';
       card2.style.display = 'none';
     }
+  }
+
+  function autoHighlightActiveCards(probStr, sectionName) {
+    if (!probStr || probStr === "PROBLEM DONE") return;
+    const catList = probStr.split(',').map(s => s.trim());
+
+    document.querySelectorAll(`.category-card-btn[data-section="${sectionName}"]`).forEach(btn => {
+      const catName = btn.getAttribute('data-cat');
+      if (catList.includes(catName)) {
+        btn.classList.add('active');
+      }
+    });
   }
 
   function setSectionLock(sectionElem, isLocked) {
@@ -1133,7 +1048,7 @@
         handleStationControl();
 
       } else {
-        alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
+        alert("⚠️️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
         globalVinData = null;
         document.getElementById('carModelInput').value = "";
         document.getElementById('colourInput').value = "";
@@ -1212,7 +1127,6 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // SUBMIT FORM DENGAN PEMISAHAN KATEGORI DAN DESKRIPSI LURUS
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -1227,30 +1141,9 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
-    let probInspCategoryOnly = [];
-    let probInspRepetitiveDesc = [];
-    let probAfterCategoryOnly = [];
-    let probAfterRepetitiveDesc = [];
-
     try {
-      if (currentStation === 'SIGN OFF') {
-        const checkedInspElements = document.querySelectorAll('#signoffInspList input:checked');
-        const checkedAfterElements = document.querySelectorAll('#signoffAfterList input:checked');
-
-        if (checkedInspElements) {
-          probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value);
-        }
-        if (checkedAfterElements) {
-          probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value);
-        }
-      } else {
-        probInspCategoryOnly = getSelectedCategoryList('inspect');
-        probInspRepetitiveDesc = getRepetitiveDescriptionList('inspect');
-
-        probAfterCategoryOnly = getSelectedCategoryList('after');
-        probAfterRepetitiveDesc = getRepetitiveDescriptionList('after');
-      }
-
+      const inspectItems = documentSelectedObjects('inspect');
+      const afterItems = documentSelectedObjects('after');
       const descAfterElem = document.getElementById('descAfterInput');
       const safeDescAfter = (descAfterElem && !descAfterElem.disabled) ? descAfterElem.value.trim() : "";
 
@@ -1262,12 +1155,10 @@
         colour: document.getElementById('colourInput').value,
         station: document.getElementById('stationSelect').value,
         
-        // Dikirim dalam bentuk Array agar Apps Script bisa memecahnya per-baris (Row)
-        problemInspection: probInspCategoryOnly, 
-        descInspection: probInspRepetitiveDesc, 
-        problemAfter: probAfterCategoryOnly,
-        descAfter: probAfterRepetitiveDesc.length > 0 ? probAfterRepetitiveDesc : (safeDescAfter ? [safeDescAfter] : []),
-        
+        inspectItems: inspectItems,
+        afterItems: afterItems,
+        extraDescAfter: safeDescAfter,
+
         isPraJudgement: praData.active,
         imgBip: praData.active ? praData.imgBip : "",
         imgFinal: praData.active ? praData.imgFinal : "",
