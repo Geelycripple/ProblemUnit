@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Geely</title>
   
-  <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
+  <!-- Engine Quagga2 Khusus Barcode 1D -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <!-- Import Google Fonts: Orbitron & Rajdhani -->
@@ -273,6 +273,48 @@
       text-decoration: line-through;
     }
 
+    /* DESAIN TOMBOL PRAJUDGEMENT CARD */
+    .prajudgement-trigger-card {
+      background: #fffbebfb;
+      border: 2px dashed #f59e0b;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .prajudgement-trigger-card:hover {
+      background: #fef3c7;
+      border-style: solid;
+    }
+    .prajudgement-trigger-card.has-data {
+      background: #dcfce7;
+      border: 2px solid #16a34a;
+    }
+
+    .pra-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      color: #b45309;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .prajudgement-trigger-card.has-data .pra-title {
+      color: #15803d;
+    }
+
+    .pra-subtitle {
+      font-size: 12px;
+      color: #78350f;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
     .section-locked {
       filter: blur(2px);
       opacity: 0.35 !important;
@@ -307,9 +349,11 @@
       z-index: 9999; padding: 15px;
     }
     .modal-card {
-      background: #ffffff; width: 100%; max-width: 420px;
+      background: #ffffff; width: 100%; max-width: 440px;
       border-radius: 16px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
       animation: popupAnim 0.25s ease-out;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .modal-title {
       font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 800;
@@ -330,7 +374,87 @@
     .btn-modal-cancel { background: #cbd5e1; color: #334155; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
     .btn-modal-save { background: #2563eb; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
-    /* Modal Camera Scanner Quagga2 */
+    /* CAMERA & EVIDENCE STYLES */
+    .evidence-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+    }
+    .evidence-header {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    .btn-cam-trigger {
+      width: 100%;
+      padding: 10px;
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .img-preview {
+      width: 100%;
+      max-height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
+      border: 2px solid #0284c7;
+    }
+
+    /* FULLSCREEN CAMERA MODAL */
+    .fullscreen-cam-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000;
+      z-index: 10000;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cam-video-stream {
+      width: 100%;
+      height: 80vh;
+      object-fit: cover;
+    }
+    .cam-controls {
+      height: 20vh;
+      width: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 20px;
+    }
+    .btn-shutter {
+      width: 65px; height: 65px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid #cbd5e1;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+    .btn-cancel-cam {
+      background: #e11d48;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    /* Modal Scanner Barcode VIN */
     .modal-scanner { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; padding: 15px; }
     .scanner-card { background: white; width: 100%; max-width: 420px; border-radius: 16px; padding: 15px; text-align: center; position: relative; }
     
@@ -392,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda --</option>
+        <option value="">-- Pilih Pos Anda... / 请选择 --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -406,18 +530,18 @@
 
       <!-- VIN & Scan Barcode -->
       <div class="form-group">
-        <label>VIN NO 车架号*</label>
+        <label>VIN NO*</label>
         <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
         <input type="text" id="vinInput" class="text-center-input" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
       </div>
 
       <!-- Car Model & Colour -->
       <div class="form-group">
-        <label>Car Model 车型</label>
+        <label>Car Model</label>
         <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
       <div class="form-group">
-        <label>Colour 颜色</label>
+        <label>Body Colour</label>
         <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
@@ -442,7 +566,6 @@
         <div class="form-group">
           <label>Problem Inspection 检验问题*</label>
           
-          <!-- Mode Operator: Category Card Buttons Grid -->
           <div class="category-grid" id="gridInspCategory">
             <button type="button" class="category-card-btn" data-cat="Gap" data-section="inspect">
               <div class="cat-btn-title"><span>Gap</span> <div class="cat-indicator"></div></div>
@@ -474,7 +597,6 @@
             </button>
           </div>
 
-          <!-- Mode Sign Off Audit (Tampil Checkbox Coret) -->
           <div class="signoff-checkbox-list" id="signoffInspList" style="display:none;"></div>
         </div>
       </div>
@@ -484,7 +606,6 @@
         <div class="form-group">
           <label>Problem After Inspection*</label>
           
-          <!-- Mode Operator: Category Card Buttons Grid -->
           <div class="category-grid" id="gridAfterCategory">
             <button type="button" class="category-card-btn" data-cat="Noise" data-section="after">
               <div class="cat-btn-title"><span>Noise</span> <div class="cat-indicator"></div></div>
@@ -502,26 +623,41 @@
               <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
               <div class="cat-btn-subtext" id="subtext_EOL"></div>
             </button>
+            <button type="button" class="category-card-btn" data-cat="Electrical" data-section="after">
+              <div class="cat-btn-title"><span>Electrical</span> <div class="cat-indicator"></div></div>
+              <div class="cat-btn-subtext" id="subtext_Electrical"></div>
+            </button>
+            <button type="button" class="category-card-btn" data-cat="Mechanichal" data-section="after">
+              <div class="cat-btn-title"><span>Mechanichal</span> <div class="cat-indicator"></div></div>
+              <div class="cat-btn-subtext" id="subtext_Mechanichal"></div>
+            </button>
+            <button type="button" class="category-card-btn" data-cat="Change Part" data-section="after">
+              <div class="cat-btn-title"><span>Change Part</span> <div class="cat-indicator"></div></div>
+              <div class="cat-btn-subtext" id="subtext_Change Part"></div>
+            </button>
           </div>
 
-          <!-- Mode Sign Off Audit (Tampil Checkbox Coret) -->
           <div class="signoff-checkbox-list" id="signoffAfterList" style="display:none;"></div>
         </div>
+
+      <!-- 4. PRAJUDGEMENT CARD TRIGGER (HANYA MUNCUL DI AFTER INSPECTION & SIGN OFF) -->
+      <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
+        <div class="pra-title">⚠️ APM PRAJUDGEMENT</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
+      </div>
 
       <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
     </div>
   </form>
 </div>
 
-<!-- POP-UP MODAL SUB-CATEGORY STANDAR PABRIK -->
+<!-- POP-UP MODAL SUB-CATEGORY -->
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA / LOKASI</div>
-    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
+    <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA / PROBLEM SPESIFIK</div>
+    <div class="modal-subtitle">Pilih area spesifik:</div>
     
-    <div class="modal-parts-box" id="modalPartsList">
-      <!-- Generated via JS -->
-    </div>
+    <div class="modal-parts-box" id="modalPartsList"></div>
 
     <div class="modal-actions">
       <button type="button" class="btn-modal-cancel" id="btnCancelModal">Batal</button>
@@ -530,7 +666,50 @@
   </div>
 </div>
 
-<!-- Modal Camera Scanner Quagga2 -->
+<!-- POP-UP MODAL PRAJUDGEMENT EVIDENCE FORM -->
+<div class="modal-overlay" id="praModal" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
+    <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM: </div>
+    
+    <!-- 1. Foto Checksheet BIP -->
+    <div class="evidence-box">
+      <div class="evidence-header">1. Foto Bukti Checksheet BIP*</div>
+      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('bip')">📷 Ambil Foto CheckSheet BIP</button>
+      <img id="previewBip" class="img-preview" alt="Preview BIP">
+    </div>
+
+    <!-- 2. Foto Checksheet Final Inspection -->
+    <div class="evidence-box">
+      <div class="evidence-header">2. Foto Bukti CheckSheet Final Inspection*</div>
+      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('final')">📷 Ambil Foto Final Inspection</button>
+      <img id="previewFinal" class="img-preview" alt="Preview Final">
+    </div>
+
+    <!-- 3. Deskripsi Problem -->
+    <div class="form-group">
+      <label>3. Deskripsi Problem Menunggu Judgement APM*</label>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-modal-cancel" onclick="closePraModal()">Batal</button>
+      <button type="button" class="btn-modal-save" style="background:#b45309;" onclick="savePraData()">Simpan Evidence</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULLSCREEN CAMERA UNTUK BUKTI CHECKSHEET -->
+<div class="fullscreen-cam-modal" id="fullscreenCamModal">
+  <video id="fullCamVideo" class="cam-video-stream" autoplay playsinline></video>
+  <div class="cam-controls">
+    <button type="button" class="btn-cancel-cam" onclick="closeFullscreenCam()">Batal</button>
+    <button type="button" class="btn-shutter" onclick="captureCamPhoto()"></button>
+  </div>
+  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+</div>
+
+<!-- Modal Scanner Barcode VIN -->
 <div class="modal-scanner" id="scannerModal">
   <div class="scanner-card">
     <h3 style="font-family:'Orbitron',sans-serif; margin-top:0; margin-bottom:10px; font-size:16px;">Scan Barcode VIN</h3>
@@ -553,16 +732,14 @@
     <div class="submitted-vin" id="displayVin">VIN_NUMBER</div>
     <div class="submitted-title">Berhasil Terdata</div>
     <div class="submitted-chinese">Report Anda Sudah Masuk ke Google Sheet</div>
-    <button type="button" class="btn-new-report" id="newReportBtn">+ New Unit Report 新建报告</button>
+    <button type="button" class="btn-new-report" id="newReportBtn">+ New Unit Report</button>
   </div>
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPCa-a6VuY66aBS8mqJXBKFEHpiGNDQzW0zj5hyVGlpzvuduniCkZ7nbptG172TeiuYQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzroM2PsxDBT8o82Zj_VTtPl5knz8-HPhl86Mz8Qsj02THpj5TlT1jjHlBLJt-W2iFQ3Q/exec";
 
-  // MASTER DATA SUB-CATEGORY POP-UP AREA SPESIFIK PABRIK
   const MASTER_SUB_CATEGORIES = {
-    // Inspection
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
     "Rash": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
     "Flush": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -571,16 +748,27 @@
     "Dent Issue": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
     "Crater": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
 
-    // After Inspection (Hasil Diskusi Terbaru)
     "Noise": ["Area Dashboard", "Area Engine Room", "Area Floor", "Area Steering", "Area Tailgate", "Area Console"],
     "ADAS": ["XCU DTC", "BMC DTC", "FCS", "OBD", "HUD DTC", "RES", "NG"],
     "Leaking": ["Area Tailgate", "Area Floor Front", "Area Floor Center", "Area Floor Rear", "Area Roof RH", "Area Roof LH", "Area Front Windshield"],
     "EOL": ["SWDL NG", "ECOS NG"],
+    "Electrical": ["Harness Issue", "Sensor Issue", "Display Screen", "Switch Issue"],
+    "Mechanichal": ["Brake System", "Suspension", "Underbody Tightening"],
+    "Change Part": ["Part Damaged", "Part Missing", "Wrong Part"]
   };
 
   let globalVinData = null;
   let subSelections = {}; 
   let activeCategoryBtn = null;
+
+  let praData = {
+    active: false,
+    imgBip: "",
+    imgFinal: "",
+    description: ""
+  };
+  let currentCamTarget = "";
+  let camStream = null;
 
   function updateDateTime() {
     const now = new Date();
@@ -598,9 +786,11 @@
     document.querySelectorAll('.cat-btn-subtext').forEach(div => div.innerText = "");
     document.getElementById('signoffInspList').innerHTML = "";
     document.getElementById('signoffAfterList').innerHTML = "";
+    
+    praData = { active: false, imgBip: "", imgFinal: "", description: "" };
+    updatePraCardUI();
   }
 
-  // EVENT LISTENER KLIK KATEGORI BUTTON GRID
   document.querySelectorAll('.category-card-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const categoryName = this.getAttribute('data-cat');
@@ -660,7 +850,91 @@
     }
   }
 
-  // MODE SIGN OFF AUDIT: RENDER CHECKBOX UNTUK UNCHECK / CORET PROBLEM
+  document.getElementById('praJudgementCard').addEventListener('click', function() {
+    document.getElementById('praModal').style.display = 'flex';
+  });
+
+  function closePraModal() {
+    document.getElementById('praModal').style.display = 'none';
+  }
+
+  function savePraData() {
+    const desc = document.getElementById('praDescriptionInput').value.trim();
+    if (!praData.imgBip || !praData.imgFinal || !desc) {
+      alert("⚠️️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+      return;
+    }
+
+    praData.description = desc;
+    praData.active = true;
+    updatePraCardUI();
+    closePraModal();
+  }
+
+  function updatePraCardUI() {
+    const card = document.getElementById('praJudgementCard');
+    const statusText = document.getElementById('praStatusText');
+
+    if (praData.active) {
+      card.classList.add('has-data');
+      statusText.innerHTML = "✅ <b>Evidence Terisi Complete!</b> (Klik untuk mengubah)";
+    } else {
+      card.classList.remove('has-data');
+      statusText.innerText = "Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection";
+    }
+  }
+
+  function openFullscreenCam(target) {
+    currentCamTarget = target;
+    const camModal = document.getElementById('fullscreenCamModal');
+    camModal.style.display = 'flex';
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+    }).then(stream => {
+      camStream = stream;
+      document.getElementById('fullCamVideo').srcObject = stream;
+    }).catch(err => {
+      navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        camStream = stream;
+        document.getElementById('fullCamVideo').srcObject = stream;
+      });
+    });
+  }
+
+  function closeFullscreenCam() {
+    if (camStream) {
+      camStream.getTracks().forEach(track => track.stop());
+    }
+    document.getElementById('fullscreenCamModal').style.display = 'none';
+  }
+
+  function captureCamPhoto() {
+    const video = document.getElementById('fullCamVideo');
+    const canvas = document.getElementById('hiddenCanvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const base64Img = canvas.toDataURL('image/jpeg', 0.85);
+
+    if (currentCamTarget === 'bip') {
+      praData.imgBip = base64Img;
+      const prev = document.getElementById('previewBip');
+      prev.src = base64Img;
+      prev.style.display = 'block';
+    } else if (currentCamTarget === 'final') {
+      praData.imgFinal = base64Img;
+      const prev = document.getElementById('previewFinal');
+      prev.src = base64Img;
+      prev.style.display = 'block';
+    }
+
+    closeFullscreenCam();
+  }
+
   function renderSignOffCheckboxes() {
     const inspContainer = document.getElementById('signoffInspList');
     const afterContainer = document.getElementById('signoffAfterList');
@@ -697,7 +971,6 @@
       });
     }
 
-    // Attach strike event
     document.querySelectorAll('.signoff-item input').forEach(cb => {
       cb.addEventListener('change', function() {
         const parent = this.closest('.signoff-item');
@@ -719,7 +992,6 @@
     document.getElementById('sum2After').innerHTML = formatBadge(activeAfter.join(', '));
   }
 
-  // GET FORMATTED DATA UNTUK SUBMIT
   function getSelectedCategoryList(sectionName) {
     const list = [];
     document.querySelectorAll(`.category-card-btn[data-section="${sectionName}"].active`).forEach(btn => {
@@ -743,7 +1015,6 @@
     return descArray.join(', ');
   }
 
-  // KONTROL STATION & BLUR FORM
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
@@ -759,6 +1030,7 @@
     const gridAfter = document.getElementById('gridAfterCategory');
     const soInspList = document.getElementById('signoffInspList');
     const soAfterList = document.getElementById('signoffAfterList');
+    const praCard = document.getElementById('praJudgementCard');
 
     if (!station) {
       blurArea.classList.add('is-blurred');
@@ -770,6 +1042,12 @@
     stationElem.disabled = true;
     document.getElementById('lockNotice').style.display = 'block';
     blurArea.classList.remove('is-blurred');
+
+    if (station === 'AFTER INSPECTION' || station === 'SIGN OFF') {
+      praCard.style.display = 'block';
+    } else {
+      praCard.style.display = 'none';
+    }
 
     if (station === 'SIGN OFF') {
       setSectionLock(secInspect, false);
@@ -837,7 +1115,6 @@
     return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
-  // FETCH MASTER DATA VIN
   function fetchMasterData(vin) {
     document.getElementById('carModelInput').value = "Mencari data VIN...";
     document.getElementById('colourInput').value = "Mencari data VIN...";
@@ -878,7 +1155,6 @@
     document.body.appendChild(script);
   }
 
-  // Quagga2 Camera Scanner
   let isScanning = false;
 
   document.getElementById('openScanBtn').addEventListener('click', function() {
@@ -939,7 +1215,6 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // SUBMIT FORM
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -960,7 +1235,6 @@
     let probAfterRepetitiveDesc = "";
 
     if (currentStation === 'SIGN OFF') {
-      // Ambil yang masih dicentang di mode Sign Off Audit
       probInspCategoryOnly = Array.from(document.querySelectorAll('#signoffInspList input:checked')).map(c => c.value).join(', ');
       probAfterCategoryOnly = Array.from(document.querySelectorAll('#signoffAfterList input:checked')).map(c => c.value).join(', ');
     } else {
@@ -981,7 +1255,12 @@
       problemInspection: probInspCategoryOnly, 
       descInspection: probInspRepetitiveDesc, 
       problemAfter: probAfterCategoryOnly,
-      descAfter: probAfterRepetitiveDesc || document.getElementById('descAfterInput').value
+      descAfter: probAfterRepetitiveDesc || document.getElementById('descAfterInput').value,
+      
+      isPraJudgement: praData.active,
+      imgBip: praData.imgBip,
+      imgFinal: praData.imgFinal,
+      praDescription: praData.description
     };
 
     const cbName = 'jsonp_save_' + Math.round(100000 * Math.random());
@@ -1014,7 +1293,6 @@
     document.body.appendChild(script);
   });
 
-  // Reload Halaman
   document.getElementById('newReportBtn').addEventListener('click', function() {
     window.location.reload();
   });
