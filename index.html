@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Unit Problem Geely</title>
+  <title>Unit Problem System</title>
   
   <!-- Engine Quagga2 Khusus Barcode 1D -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
@@ -334,7 +334,7 @@
       font-weight: 700; 
       letter-spacing: 1px;
       cursor: pointer; 
-      margin-top: 10px; 
+      margin-top: 15px; 
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); 
       transition: all 0.2s;
     }
@@ -486,7 +486,7 @@
 
     .submitted-vin { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 800; color: #15803d; margin-bottom: 4px; word-break: break-all; }
     .submitted-title { font-size: 18px; font-weight: 700; color: #16a34a; margin-bottom: 8px; }
-    .submitted-chinese { font-size: 13px; color: #64748b; margin-bottom: 25px; font-weight: 500; }
+    .submitted-sub { font-size: 13px; color: #64748b; margin-bottom: 25px; font-weight: 500; }
 
     .btn-new-report {
       width: 100%; padding: 14px; background: #2563eb; color: #ffffff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); transition: background 0.2s;
@@ -497,17 +497,17 @@
 <body>
 
 <div class="card">
-  <h2>Unit Problem Geely</h2>
+  <h2>UNIT PROBLEM TRACKING</h2>
   
   <form id="problemForm">
     <!-- Date & Time -->
     <div class="row-2">
       <div class="form-group">
-        <label>Date 日期*</label>
+        <label>Date*</label>
         <input type="text" id="dateInput" class="text-center-input" readonly>
       </div>
       <div class="form-group">
-        <label>Time 时间*</label>
+        <label>Time*</label>
         <input type="text" id="timeInput" class="text-center-input" readonly>
       </div>
     </div>
@@ -516,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda... / 请选择 --</option>
+        <option value="">-- Pilih Pos Anda... --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -541,7 +541,7 @@
         <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
       <div class="form-group">
-        <label>Body Colour</label>
+        <label>Colour</label>
         <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
@@ -564,7 +564,7 @@
       <!-- 2. Problem Inspection Section (Category Grid Buttons) -->
       <div id="sectionInspect">
         <div class="form-group">
-          <label>Problem Inspection 检验问题*</label>
+          <label>Problem Inspection*</label>
           
           <div class="category-grid" id="gridInspCategory">
             <button type="button" class="category-card-btn" data-cat="Gap" data-section="inspect">
@@ -642,10 +642,11 @@
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER (HANYA MUNCUL DI AFTER INSPECTION & SIGN OFF) -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️ APM PRAJUDGEMENT</div>
+        <div class="pra-title">⚠️ PRAJUDGEMENT APM ⚠️</div>
         <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
       </div>
 
+      <!-- TOMBOL SUBMIT KELUAR DARI SECTION (TETAP AKTIF DAN BISA DIKLIK) -->
       <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
     </div>
   </form>
@@ -670,7 +671,7 @@
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
     <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
-    <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM: </div>
+    <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
     
     <!-- 1. Foto Checksheet BIP -->
     <div class="evidence-box">
@@ -689,7 +690,7 @@
     <!-- 3. Deskripsi Problem -->
     <div class="form-group">
       <label>3. Deskripsi Problem Menunggu Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM"></textarea>
+      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah yang membutuhkan judgement APM Geely"></textarea>
     </div>
 
     <div class="modal-actions">
@@ -731,7 +732,7 @@
     </div>
     <div class="submitted-vin" id="displayVin">VIN_NUMBER</div>
     <div class="submitted-title">Berhasil Terdata</div>
-    <div class="submitted-chinese">Report Anda Sudah Masuk ke Google Sheet</div>
+    <div class="submitted-sub">Report Anda Sudah Terkirim ke Google Sheet</div>
     <button type="button" class="btn-new-report" id="newReportBtn">+ New Unit Report</button>
   </div>
 </div>
@@ -861,7 +862,7 @@
   function savePraData() {
     const desc = document.getElementById('praDescriptionInput').value.trim();
     if (!praData.imgBip || !praData.imgFinal || !desc) {
-      alert("⚠️️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
       return;
     }
 
@@ -1272,7 +1273,7 @@
       if (document.body.contains(script)) document.body.removeChild(script);
       
       submitBtn.disabled = false;
-      submitBtn.innerText = "SUBMIT / 提交";
+      submitBtn.innerText = "SUBMIT DATA";
 
       if (res.status === 'success') {
         document.getElementById('displayVin').innerText = vin;
@@ -1286,7 +1287,7 @@
       delete window[cbName];
       if (document.body.contains(script)) document.body.removeChild(script);
       submitBtn.disabled = false;
-      submitBtn.innerText = "SUBMIT / 提交";
+      submitBtn.innerText = "SUBMIT DATA";
       alert("Terjadi kesalahan koneksi saat mengirim data.");
     };
 
