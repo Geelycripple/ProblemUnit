@@ -464,12 +464,12 @@
         </div>
 
         <div class="form-group">
-          <label>Problem Description After Inspection 检验后问题详细描述</label>
+          <label>Problem Description After Inspection</label>
           <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
-      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
+      <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
     </div>
   </form>
 </div>
@@ -478,7 +478,7 @@
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
     <div class="modal-title" id="modalCategoryTitle">GAP - PILIH LOKASI / AREA</div>
-    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
+    <div class="modal-subtitle">Pilih area spesifik:</div>
     
     <div class="modal-parts-box" id="modalPartsList">
       <!-- Generated via JS -->
@@ -524,17 +524,17 @@
   // Master Komponen Bahasa Standar Pabrik
   const STANDARD_PARTS_LIST = [
     "Engine Hood",
+    "Tailgate",
     "Pillar A LH",
     "Pillar B LH",
     "Pillar C LH",
-    "Pillar A RH",
-    "Pillar B RH",
-    "Pillar C RH",
     "Fender FRT LH",
     "Front Door LH",
     "Rear Door LH",
-    "Tailgate",
-    "Front Fender FRT RH",
+    "Pillar A RH",
+    "Pillar B RH",
+    "Pillar C RH",
+    "Fender FRT RH",
     "Front Door RH",
     "Rear Door RH"
   ];
