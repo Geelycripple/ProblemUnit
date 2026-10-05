@@ -98,7 +98,7 @@
 <body>
 
 <div class="card">
-  <h2>UNIT PROBLEM TRACKING</h2>
+  <h2>UNIT PROBLEM GEELY</h2>
   
   <form id="problemForm">
     <div class="row-2">
@@ -115,7 +115,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda... --</option>
+        <option value="">---= Pilih Pos Anda =---</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -149,7 +149,7 @@
       </div>
 
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
+        <div class="title">🔧 Summary 2: Status Problem Repair / Tambahan</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -177,15 +177,12 @@
             <button type="button" class="category-card-btn" data-cat="ADAS" data-section="after"><div class="cat-btn-title"><span>ADAS</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_ADAS"></div></button>
             <button type="button" class="category-card-btn" data-cat="Leaking" data-section="after"><div class="cat-btn-title"><span>Leaking</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Leaking"></div></button>
             <button type="button" class="category-card-btn" data-cat="EOL" data-section="after"><div class="cat-btn-title"><span>EOL</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_EOL"></div></button>
-            <button type="button" class="category-card-btn" data-cat="Electrical" data-section="after"><div class="cat-btn-title"><span>Electrical</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Electrical"></div></button>
-            <button type="button" class="category-card-btn" data-cat="Mechanichal" data-section="after"><div class="cat-btn-title"><span>Mechanichal</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Mechanichal"></div></button>
-            <button type="button" class="category-card-btn" data-cat="Change Part" data-section="after"><div class="cat-btn-title"><span>Change Part</span><div class="cat-indicator"></div></div><div class="cat-btn-subtext" id="subtext_Change Part"></div></button>
           </div>
         </div>
       </div>
 
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️️ APM PRAJUDGEMENT CLAIM</div>
+        <div class="pra-title">⚠️️--PRAJUDGEMENT--⚠️</div>
         <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
       </div>
 
@@ -199,7 +196,7 @@
 <div class="modal-overlay" id="subCategoryModal" style="display: none;">
   <div class="modal-card">
     <div class="modal-title" id="modalCategoryTitle">GAP - PILIH AREA SPESIFIK</div>
-    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
+    <div class="modal-subtitle">Pilih area spesifik:</div>
     <div class="modal-parts-box" id="modalPartsList"></div>
     <div class="modal-actions">
       <button type="button" class="btn-modal-cancel" id="btnCancelModal">Batal</button>
@@ -211,7 +208,7 @@
 <!-- PRAJUDGEMENT MODAL -->
 <div class="modal-overlay" id="praModal" style="display: none;">
   <div class="modal-card">
-    <div class="modal-title" style="color:#b45309;">⚠️ APM PRAJUDGEMENT EVIDENCE</div>
+    <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
     <div class="evidence-box">
       <div class="evidence-header">1. Foto Bukti Checksheet BIP*</div>
@@ -262,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygzLw818Ztnrf615TepJ6jTu7UKHZgIA9Jpxehl5mqCvmKjoiLOlNyAk92MkdHGYU3qw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjnTOox2vqM40TmoGiOzhVGmysVyM5OwAHlSDE01CdiCq13GIffj0BbHfRk1Y3Hhj1/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -277,9 +274,6 @@
     "ADAS": ["XCU DTC", "BMC DTC", "FCS", "OBD", "HUD DTC", "RES", "NG"],
     "Leaking": ["Area Tailgate", "Area Floor Front", "Area Floor Center", "Area Floor Rear", "Area Roof RH", "Area Roof LH", "Area Front Windshield"],
     "EOL": ["SWDL NG", "ECOS NG"],
-    "Electrical": ["Harness Issue", "Sensor Issue", "Display Screen", "Switch Issue"],
-    "Mechanichal": ["Brake System", "Suspension", "Underbody Tightening"],
-    "Change Part": ["Part Damaged", "Part Missing", "Wrong Part"]
   };
 
   let globalVinData = null;
