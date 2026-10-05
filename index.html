@@ -516,7 +516,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">--  Pilih Pos Anda  --</option>
+        <option value="">-- Pilih Pos Anda --</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -628,15 +628,20 @@
           <div class="signoff-checkbox-list" id="signoffAfterList" style="display:none;"></div>
         </div>
 
-      <!-- 4. PRAJUDGEMENT CARD TRIGGER (HANYA MUNCUL DI AFTER INSPECTION & SIGN OFF) -->
-      <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
-        <div class="pra-title">⚠️PRAJUDGEMENT⚠️</div>
-        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem harus Judgement APM</div>
+        <div class="form-group">
+          <label>Problem Description After Inspection</label>
+          <textarea id="descAfterInput" rows="2" placeholder="Masukkan detail deskripsi opsional..."></textarea>
+        </div>
       </div>
 
-    </div> <!-- AKHIR DIV FORM-BLUR-AREA -->
+      <!-- 4. PRAJUDGEMENT CARD TRIGGER -->
+      <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
+        <div class="pra-title">⚠️ APM PRAJUDGEMENT CLAIM</div>
+        <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti CheckSheet BIP & Final Inspection</div>
+      </div>
 
-    <!-- TOMBOL SUBMIT DITARUH DI LUAR AREA BLUR -->
+    </div> <!-- AKHIR FORM BLUR AREA -->
+
     <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
   </form>
 </div>
@@ -1207,7 +1212,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // SUBMIT FORM DENGAN LOGIKA SAFE-READ PER POS
+  // SUBMIT FORM AMAN
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -1227,72 +1232,82 @@
     let probAfterCategoryOnly = "";
     let probAfterRepetitiveDesc = "";
 
-    // PERBAIKAN LOGIKA: Hanya baca checkbox Sign Off bila pos murni SIGN OFF
-    if (currentStation === 'SIGN OFF') {
-      const checkedInspElements = document.querySelectorAll('#signoffInspList input:checked');
-      const checkedAfterElements = document.querySelectorAll('#signoffAfterList input:checked');
+    try {
+      if (currentStation === 'SIGN OFF') {
+        const checkedInspElements = document.querySelectorAll('#signoffInspList input:checked');
+        const checkedAfterElements = document.querySelectorAll('#signoffAfterList input:checked');
 
-      if (checkedInspElements) {
-        probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value).join(', ');
-      }
-      if (checkedAfterElements) {
-        probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value).join(', ');
-      }
-    } else {
-      // Untuk pos INSPECTION, IN TESTLINE, & AFTER INSPECTION
-      probInspCategoryOnly = getSelectedCategoryList('inspect').join(', ');
-      probInspRepetitiveDesc = getRepetitiveDescriptionList('inspect');
-
-      probAfterCategoryOnly = getSelectedCategoryList('after').join(', ');
-      probAfterRepetitiveDesc = getRepetitiveDescriptionList('after');
-    }
-
-    const payload = {
-      action: 'saveData',
-      timeInput: document.getElementById('dateInput').value + " " + document.getElementById('timeInput').value,
-      vin: vin,
-      carModel: document.getElementById('carModelInput').value,
-      colour: document.getElementById('colourInput').value,
-      station: document.getElementById('stationSelect').value,
-      problemInspection: probInspCategoryOnly, 
-      descInspection: probInspRepetitiveDesc, 
-      problemAfter: probAfterCategoryOnly,
-      descAfter: probAfterRepetitiveDesc || document.getElementById('descAfterInput').value,
-      
-      isPraJudgement: praData.active,
-      imgBip: praData.imgBip,
-      imgFinal: praData.imgFinal,
-      praDescription: praData.description
-    };
-
-    const cbName = 'jsonp_save_' + Math.round(100000 * Math.random());
-    const script = document.createElement('script');
-    script.src = `${SCRIPT_URL}?action=saveData&data=${encodeURIComponent(JSON.stringify(payload))}&callback=${cbName}&authuser=0`;
-
-    window[cbName] = function(res) {
-      delete window[cbName];
-      if (document.body.contains(script)) document.body.removeChild(script);
-      
-      submitBtn.disabled = false;
-      submitBtn.innerText = "SUBMIT DATA";
-
-      if (res.status === 'success') {
-        document.getElementById('displayVin').innerText = vin;
-        document.getElementById('successOverlay').style.display = 'flex';
+        if (checkedInspElements) {
+          probInspCategoryOnly = Array.from(checkedInspElements).map(c => c.value).join(', ');
+        }
+        if (checkedAfterElements) {
+          probAfterCategoryOnly = Array.from(checkedAfterElements).map(c => c.value).join(', ');
+        }
       } else {
-        alert("Gagal menyimpan data: " + res.message);
-      }
-    };
+        probInspCategoryOnly = getSelectedCategoryList('inspect').join(', ');
+        probInspRepetitiveDesc = getRepetitiveDescriptionList('inspect');
 
-    script.onerror = function() {
-      delete window[cbName];
-      if (document.body.contains(script)) document.body.removeChild(script);
+        probAfterCategoryOnly = getSelectedCategoryList('after').join(', ');
+        probAfterRepetitiveDesc = getRepetitiveDescriptionList('after');
+      }
+
+      // Safe-read deskripsi After Inspection
+      const descAfterElem = document.getElementById('descAfterInput');
+      const safeDescAfter = (descAfterElem && !descAfterElem.disabled) ? descAfterElem.value.trim() : "";
+
+      const payload = {
+        action: 'saveData',
+        timeInput: document.getElementById('dateInput').value + " " + document.getElementById('timeInput').value,
+        vin: vin,
+        carModel: document.getElementById('carModelInput').value,
+        colour: document.getElementById('colourInput').value,
+        station: document.getElementById('stationSelect').value,
+        problemInspection: probInspCategoryOnly, 
+        descInspection: probInspRepetitiveDesc, 
+        problemAfter: probAfterCategoryOnly,
+        descAfter: probAfterRepetitiveDesc || safeDescAfter,
+        
+        // Hanya kirim praJudgement jika aktif
+        isPraJudgement: praData.active,
+        imgBip: praData.active ? praData.imgBip : "",
+        imgFinal: praData.active ? praData.imgFinal : "",
+        praDescription: praData.active ? praData.description : ""
+      };
+
+      const cbName = 'jsonp_save_' + Math.round(100000 * Math.random());
+      const script = document.createElement('script');
+      script.src = `${SCRIPT_URL}?action=saveData&data=${encodeURIComponent(JSON.stringify(payload))}&callback=${cbName}&authuser=0`;
+
+      window[cbName] = function(res) {
+        delete window[cbName];
+        if (document.body.contains(script)) document.body.removeChild(script);
+        
+        submitBtn.disabled = false;
+        submitBtn.innerText = "SUBMIT DATA";
+
+        if (res.status === 'success') {
+          document.getElementById('displayVin').innerText = vin;
+          document.getElementById('successOverlay').style.display = 'flex';
+        } else {
+          alert("Gagal menyimpan data: " + res.message);
+        }
+      };
+
+      script.onerror = function() {
+        delete window[cbName];
+        if (document.body.contains(script)) document.body.removeChild(script);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "SUBMIT DATA";
+        alert("Terjadi kesalahan koneksi saat mengirim data.");
+      };
+
+      document.body.appendChild(script);
+
+    } catch (err) {
       submitBtn.disabled = false;
       submitBtn.innerText = "SUBMIT DATA";
-      alert("Terjadi kesalahan koneksi saat mengirim data.");
-    };
-
-    document.body.appendChild(script);
+      alert("Terjadi kesalahan sistem: " + err.message);
+    }
   });
 
   document.getElementById('newReportBtn').addEventListener('click', function() {
