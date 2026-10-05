@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Unit Problem Geely</title>
+  <title>Unit Problem Geely 吉利车辆问题</title>
   
   <!-- Engine Quagga2 Khusus Barcode 1D / VIN Kertas -->
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
@@ -86,7 +86,7 @@
     .row-2 { display: flex; gap: 10px; }
     .row-2 > div { flex: 1; }
 
-    /* Highlight Station Box & Alignment Center */
+    /* Highlight Station Box */
     .station-box { 
       background: #edf2f7; 
       padding: 12px; 
@@ -134,7 +134,7 @@
     }
     .btn-scan:hover { background: #008f5a; }
 
-    /* SUMMARY CARD 1 (HISTORY IN AFTER INSPECTION OUT) */
+    /* SUMMARY CARDS */
     .summary-card-1 {
       display: none;
       background: #ebf8ff;
@@ -155,7 +155,6 @@
       padding-bottom: 4px;
     }
 
-    /* SUMMARY CARD 2 (STATUS AKTIF / BELUM DICORET) */
     .summary-card-2 {
       display: none;
       background: #f0fff4;
@@ -178,23 +177,32 @@
 
     .summary-item { margin-bottom: 4px; }
     .summary-label { font-weight: 700; }
-    .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 700; display: inline-block; margin-right: 4px; }
+    .badge-prob { background: #e2e8f0; color: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 700; display: inline-block; margin-right: 4px; margin-bottom: 4px; }
     .badge-done { background: #c6f6d5; color: #22543d; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 800; display: inline-block; }
 
     /* Scrollable Multi Select Box */
     .checkbox-scroll-box {
-      max-height: 180px; overflow-y: auto; border: 1px solid #cbd5e0; border-radius: 10px; padding: 8px; background: #faf5ff; display: flex; flex-direction: column; gap: 6px;
+      max-height: 220px; overflow-y: auto; border: 1px solid #cbd5e0; border-radius: 10px; padding: 8px; background: #faf5ff; display: flex; flex-direction: column; gap: 6px;
     }
     .checkbox-scroll-box::-webkit-scrollbar { width: 6px; }
     .checkbox-scroll-box::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
     
     .checkbox-item { 
-      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+      display: flex; flex-direction: column; padding: 8px 10px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
     .checkbox-item:hover { background: #f7fafc; }
+    .checkbox-header { display: flex; align-items: center; gap: 10px; }
     .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; }
 
-    /* Effect Strikethrough saat Uncheck */
+    .sub-detail-text {
+      font-size: 12px;
+      color: #3182ce;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-left: 26px;
+      word-break: break-word;
+    }
+
     .checkbox-item.is-cleared {
       background: #f1f5f9;
       color: #94a3b8;
@@ -228,6 +236,37 @@
     .btn-submit:hover { background: #1d4ed8; }
     .btn-submit:disabled { background: #a0aec0; cursor: not-allowed; box-shadow: none; }
 
+    /* POP-UP MODAL SUB-CATEGORY */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 9999; padding: 15px;
+    }
+    .modal-card {
+      background: #ffffff; width: 100%; max-width: 420px;
+      border-radius: 16px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      animation: popupAnim 0.25s ease-out;
+    }
+    .modal-title {
+      font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 800;
+      color: #1e293b; margin-top: 0; margin-bottom: 6px;
+      border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;
+    }
+    .modal-subtitle { font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600; }
+    .modal-parts-box {
+      max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;
+    }
+    .modal-part-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px;
+      background: #f8fafc; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .modal-part-item:hover { background: #edf2f7; }
+    .modal-part-item input { width: 18px; height: 18px; accent-color: #2563eb; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-modal-cancel { background: #cbd5e1; color: #334155; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .btn-modal-save { background: #2563eb; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+
     /* Modal Camera Scanner Quagga2 */
     .modal-scanner { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; padding: 15px; }
     .scanner-card { background: white; width: 100%; max-width: 420px; border-radius: 16px; padding: 15px; text-align: center; position: relative; }
@@ -244,7 +283,7 @@
 
     .btn-close-scanner { margin-top: 12px; width: 100%; padding: 10px; background: #e53e3e; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-    /* Success Modal */
+    /* Success Popup Layer */
     .success-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; padding: 20px;
     }
@@ -271,7 +310,7 @@
 <body>
 
 <div class="card">
-  <h2>-- Unit Problem Geely --</h2>
+  <h2>Unit Problem Geely 吉利车辆问题</h2>
   
   <form id="problemForm">
     <!-- Date & Time -->
@@ -312,16 +351,16 @@
       <!-- Car Model & Colour -->
       <div class="form-group">
         <label>Car Model 车型</label>
-        <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis Sesual VIN" readonly>
+        <input type="text" id="carModelInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
       <div class="form-group">
         <label>Colour 颜色</label>
-        <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesual VIN" readonly>
+        <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
       <!-- SUMMARY CARD 1: HISTORY AFTER INSPECTION OUT -->
       <div class="summary-card-1" id="summaryCard1">
-        <div class="title">📌 History Problem : After Inspection Out </div>
+        <div class="title">📌 Summary 1: History Problem (After Inspection Out)</div>
         <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sum1Vin">-</span></div>
         <div class="summary-item"><span class="summary-label">After Inspection Out:</span> <span id="sum1Date">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum1Inspect">-</span></div>
@@ -330,43 +369,97 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 STATUS PROBLEM : Berhasil DiRepair/Tambahan Problem</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
 
-      <!-- 2. Problem Inspection Section -->
+      <!-- 2. Problem Inspection Section (Select Only) -->
       <div id="sectionInspect">
         <div class="form-group">
           <label>Problem Inspection 检验问题*</label>
           <div class="checkbox-scroll-box">
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Gap"> <span>Gap</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Rash"> <span>Rash</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Flush"> <span>Flush</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Wavy"> <span>Wavy</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Bending"> <span>Bending</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Dent Issue"> <span>Dent Issue</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probInsp" value="Crater"> <span>Crater</span></label>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Gap"> <span>Gap</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Gap"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Rash"> <span>Rash</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Rash"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Flush"> <span>Flush</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Flush"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Wavy"> <span>Wavy</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Wavy"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Bending"> <span>Bending</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Bending"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Dent Issue"> <span>Dent Issue</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Dent Issue"></div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probInsp" value="Crater"> <span>Crater</span>
+              </div>
+              <div class="sub-detail-text" id="sub_Crater"></div>
+            </div>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>Problem Description Inspection 检验问题详细描述</label>
-          <textarea id="descInspInput" rows="2" placeholder="Masukkan detail deskripsi..."></textarea>
         </div>
       </div>
 
-      <!-- 3. Problem After Inspection Section -->
+      <!-- 3. Problem After Inspection Section (Standard Format) -->
       <div id="sectionAfter">
         <div class="form-group">
           <label>Problem After Inspection 检验后问题*</label>
           <div class="checkbox-scroll-box">
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Noise"> <span>Noise</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="ADAS"> <span>ADAS</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Electrical"> <span>Electrical</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Mechanichal"> <span>Mechanichal</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Change Part"> <span>Change Part</span></label>
-            <label class="checkbox-item"><input type="checkbox" name="probAfter" value="Liquidity"> <span>Liquidity</span></label>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="Noise"> <span>Noise</span>
+              </div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="ADAS"> <span>ADAS</span>
+              </div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="Electrical"> <span>Electrical</span>
+              </div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="Mechanichal"> <span>Mechanichal</span>
+              </div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="Change Part"> <span>Change Part</span>
+              </div>
+            </div>
+            <div class="checkbox-item">
+              <div class="checkbox-header">
+                <input type="checkbox" name="probAfter" value="Liquidity"> <span>Liquidity</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -379,6 +472,23 @@
       <button type="submit" class="btn-submit" id="submitBtn">SUBMIT / 提交</button>
     </div>
   </form>
+</div>
+
+<!-- POP-UP MODAL SUB-CATEGORY STANDAR PABRIK -->
+<div class="modal-overlay" id="subCategoryModal" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-title" id="modalCategoryTitle">GAP - PILIH LOKASI / AREA</div>
+    <div class="modal-subtitle">Pilih area spesifik (Bahasa Standar Pabrik):</div>
+    
+    <div class="modal-parts-box" id="modalPartsList">
+      <!-- Generated via JS -->
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-modal-cancel" id="btnCancelModal">Batal</button>
+      <button type="button" class="btn-modal-save" id="btnSaveModal">Simpan Pilihan</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal Camera Scanner Quagga2 -->
@@ -409,9 +519,29 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8lmxZ8OfgRO0K_Y6Ws34WQ5DTStCYMqPnbE5KbH3c2iWgIn__FQY2KbLMvh4J1YMMow/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwfHZUg3CvMSvQxaQIJXayyd-Sf46BliiY1OpSuHT3hebBE2eROv-XlafW_5SIILhrP/exec";
+
+  // Master Komponen Bahasa Standar Pabrik
+  const STANDARD_PARTS_LIST = [
+    "Engine Hood",
+    "Pillar A LH",
+    "Pillar B LH",
+    "Pillar C LH",
+    "Pillar A RH",
+    "Pillar B RH",
+    "Pillar C RH",
+    "Fender FRT LH",
+    "Front Door LH",
+    "Rear Door LH",
+    "Tailgate",
+    "Front Fender FRT RH",
+    "Front Door RH",
+    "Rear Door RH"
+  ];
 
   let globalVinData = null;
+  let subSelections = {}; 
+  let activeCategoryCheckbox = null;
 
   function updateDateTime() {
     const now = new Date();
@@ -423,43 +553,148 @@
 
   function uncheckAllBoxes() {
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      cb.checked = false;
-      toggleStrikethrough(cb);
+      if (cb.name === 'probInsp' || cb.name === 'probAfter') {
+        cb.checked = false;
+        toggleStrikethrough(cb);
+      }
     });
+    subSelections = {};
+    document.querySelectorAll('.sub-detail-text').forEach(div => div.innerText = "");
   }
 
-  // Update real-time Summary Card 2 saat operator uncheck problem
-  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.addEventListener('change', function() {
+  // EVENT LISTENER CHECKBOX PROBLEM INSPECTION
+  document.querySelectorAll('input[name="probInsp"]').forEach(cb => {
+    cb.addEventListener('click', function(e) {
+      const categoryName = this.value;
+      const currentStation = document.getElementById('stationSelect').value.toUpperCase();
+
+      if (currentStation === 'SIGN OFF') {
+        toggleStrikethrough(this);
+        updateSummaryCard2Live();
+        return;
+      }
+
+      if (this.checked) {
+        e.preventDefault(); 
+        activeCategoryCheckbox = this;
+        openSubCategoryModal(categoryName);
+      } else {
+        delete subSelections[categoryName];
+        renderSubText(categoryName, []);
+        toggleStrikethrough(this);
+        updateSummaryCard2Live();
+      }
+    });
+  });
+
+  // EVENT LISTENER CHECKBOX AFTER INSPECTION
+  document.querySelectorAll('input[name="probAfter"]').forEach(cb => {
+    cb.addEventListener('click', function() {
       toggleStrikethrough(this);
       updateSummaryCard2Live();
     });
   });
 
-  function toggleStrikethrough(checkboxElem) {
-    const parentLabel = checkboxElem.closest('.checkbox-item');
-    if (!parentLabel) return;
+  function openSubCategoryModal(categoryName) {
+    document.getElementById('modalCategoryTitle').innerText = `${categoryName.toUpperCase()} - PILIH AREA / LOKASI`;
+    const container = document.getElementById('modalPartsList');
+    container.innerHTML = "";
 
-    if (checkboxElem.checked) {
-      parentLabel.classList.remove('is-cleared');
+    const selectedParts = subSelections[categoryName] || [];
+
+    STANDARD_PARTS_LIST.forEach(part => {
+      const isChecked = selectedParts.includes(part);
+      const item = document.createElement('label');
+      item.className = 'modal-part-item';
+      item.innerHTML = `<input type="checkbox" value="${part}" ${isChecked ? 'checked' : ''}> <span>${part}</span>`;
+      container.appendChild(item);
+    });
+
+    document.getElementById('subCategoryModal').style.display = 'flex';
+  }
+
+  document.getElementById('btnSaveModal').addEventListener('click', function() {
+    if (!activeCategoryCheckbox) return;
+
+    const categoryName = activeCategoryCheckbox.value;
+    const checkedParts = Array.from(document.querySelectorAll('#modalPartsList input:checked')).map(cb => cb.value);
+
+    if (checkedParts.length > 0) {
+      subSelections[categoryName] = checkedParts;
+      activeCategoryCheckbox.checked = true;
+      renderSubText(categoryName, checkedParts);
     } else {
-      parentLabel.classList.add('is-cleared');
+      delete subSelections[categoryName];
+      activeCategoryCheckbox.checked = false;
+      renderSubText(categoryName, []);
+    }
+
+    toggleStrikethrough(activeCategoryCheckbox);
+    document.getElementById('subCategoryModal').style.display = 'none';
+    activeCategoryCheckbox = null;
+    updateSummaryCard2Live();
+  });
+
+  document.getElementById('btnCancelModal').addEventListener('click', function() {
+    document.getElementById('subCategoryModal').style.display = 'none';
+    activeCategoryCheckbox = null;
+  });
+
+  function renderSubText(categoryName, partsList) {
+    const el = document.getElementById(`sub_${categoryName}`);
+    if (el) {
+      el.innerText = partsList.length > 0 ? `📍 [${partsList.join(', ')}]` : "";
     }
   }
 
-  // Update Summary Card 2 berdasarkan centang aktif di UI
+  function toggleStrikethrough(checkboxElem) {
+    const parentItem = checkboxElem.closest('.checkbox-item');
+    if (!parentItem) return;
+
+    if (checkboxElem.checked) {
+      parentItem.classList.remove('is-cleared');
+    } else {
+      parentItem.classList.add('is-cleared');
+    }
+  }
+
   function updateSummaryCard2Live() {
     const currentStation = document.getElementById('stationSelect').value.toUpperCase();
     if (currentStation !== 'SIGN OFF') return;
 
-    const activeInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value);
-    const activeAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value);
+    const activeInsp = getSelectedCategoriesOnly('probInsp');
+    const activeAfter = getSelectedCategoriesOnly('probAfter');
 
     document.getElementById('sum2Inspect').innerHTML = formatBadge(activeInsp.join(', '));
     document.getElementById('sum2After').innerHTML = formatBadge(activeAfter.join(', '));
   }
 
-  // 1. KONTROL LOCK STATION & UNBLUR FORM
+  // MENGAMBIL NAMA KATEGORI UTAMA SAJA (Untuk kolom Problem Inspection)
+  function getSelectedCategoriesOnly(checkboxName) {
+    const list = [];
+    document.querySelectorAll(`input[name="${checkboxName}"]:checked`).forEach(cb => {
+      list.push(cb.value);
+    });
+    return list;
+  }
+
+  // MEMBENTUK REPETITIVE DESCRIPTION (Untuk kolom Problem Description Inspection)
+  function getRepetitiveDescriptionList() {
+    const descArray = [];
+    document.querySelectorAll('input[name="probInsp"]:checked').forEach(cb => {
+      const category = cb.value;
+      if (subSelections[category] && subSelections[category].length > 0) {
+        subSelections[category].forEach(part => {
+          descArray.push(`${category} ${part}`);
+        });
+      } else {
+        descArray.push(category);
+      }
+    });
+    return descArray.join(', ');
+  }
+
+  // KONTROL STATION & BLUR FORM
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
 
   function handleStationControl() {
@@ -487,13 +722,11 @@
       setSectionLock(secAfter, false);
 
       if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
-        // Populate Summary Card 1 (History Awal)
         document.getElementById('sum1Vin').innerText = globalVinData.vin;
         document.getElementById('sum1Date').innerText = globalVinData.existingProblem.lastDate || "-";
         document.getElementById('sum1Inspect').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryInspect || "-");
         document.getElementById('sum1After').innerHTML = formatBadge(globalVinData.existingProblem.fullHistoryAfter || "-");
 
-        // Populate Summary Card 2 (Problem Aktif dari Sheet)
         document.getElementById('sum2Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
         document.getElementById('sum2After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
 
@@ -538,7 +771,7 @@
     return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
-  // 2. FETCH MASTER DATA & CENTANG PROBLEM EXISTING
+  // FETCH MASTER DATA VIN
   function fetchMasterData(vin) {
     document.getElementById('carModelInput').value = "Mencari data VIN...";
     document.getElementById('colourInput').value = "Mencari data VIN...";
@@ -558,7 +791,7 @@
 
         uncheckAllBoxes();
 
-        // CENTANG KHUSUS PROBLEM AKTIF YANG BELUM DICORET DI GOOGLE SHEET
+        // CENTANG AKTIF
         if (data.existingProblem && data.existingProblem.found) {
           const actInsp = data.existingProblem.activeInspect || "";
           const actAfter = data.existingProblem.activeAfter || "";
@@ -608,7 +841,7 @@
     document.body.appendChild(script);
   }
 
-  // 3. Quagga2 Camera Scanner
+  // Quagga2 Camera Scanner
   let isScanning = false;
 
   document.getElementById('openScanBtn').addEventListener('click', function() {
@@ -669,7 +902,7 @@
 
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // 4. Submit Form
+  // SUBMIT FORM
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -683,8 +916,14 @@
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
 
-    const probInsp = Array.from(document.querySelectorAll('input[name="probInsp"]:checked')).map(c => c.value).join(', ');
-    const probAfter = Array.from(document.querySelectorAll('input[name="probAfter"]:checked')).map(c => c.value).join(', ');
+    // 1. Kategori Utama (Contoh: "Gap, Rash") -> Masuk ke Problem Inspection
+    const probInspCategoryOnly = getSelectedCategoriesOnly('probInsp').join(', ');
+
+    // 2. Deskripsi Terstruktur (Contoh: "Gap Engine Hood, Gap Front Door RH") -> Masuk ke Problem Description Inspection
+    const probInspRepetitiveDesc = getRepetitiveDescriptionList();
+
+    // 3. Data After Inspection
+    const probAfterList = getSelectedCategoriesOnly('probAfter').join(', ');
 
     const payload = {
       action: 'saveData',
@@ -693,9 +932,9 @@
       carModel: document.getElementById('carModelInput').value,
       colour: document.getElementById('colourInput').value,
       station: document.getElementById('stationSelect').value,
-      problemInspection: probInsp,
-      descInspection: document.getElementById('descInspInput').value,
-      problemAfter: probAfter,
+      problemInspection: probInspCategoryOnly, 
+      descInspection: probInspRepetitiveDesc, 
+      problemAfter: probAfterList,
       descAfter: document.getElementById('descAfterInput').value
     };
 
@@ -729,7 +968,7 @@
     document.body.appendChild(script);
   });
 
-  // 5. + New Unit Report Button (Reload Halaman)
+  // Reload Halaman
   document.getElementById('newReportBtn').addEventListener('click', function() {
     window.location.reload();
   });
