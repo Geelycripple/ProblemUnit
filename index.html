@@ -213,6 +213,7 @@
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     }
 
+    /* PUSAT PERBAIKAN: Dibuat Flex Space-Between & Lebar 100% */
     .cat-btn-title {
       font-weight: 800;
       font-size: 14px;
@@ -220,6 +221,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
 
     .category-card-btn.active .cat-btn-title {
@@ -234,11 +236,14 @@
       word-break: break-word;
     }
 
+    /* PUSAT PERBAIKAN: Bulatan terdorong ke paling kanan */
     .cat-indicator {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       background: #cbd5e1;
+      margin-left: auto;
+      flex-shrink: 0;
     }
 
     .category-card-btn.active .cat-indicator {
@@ -489,7 +494,7 @@
     <div class="form-group station-box">
       <label style="color:#2b6cb0;" id="stationLabel">1. PILIH POS ANDA* (Pilih Dahulu)</label>
       <select id="stationSelect" required>
-        <option value="">-- Pilih Pos Anda... --</option>
+        <option value="">---== Pilih Pos Anda ==---</option>
         <option value="IN TESTLINE">IN TESTLINE</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
@@ -529,7 +534,7 @@
 
       <!-- SUMMARY CARD 2: REAL-TIME ACTIVE DEFECT / REMAINING -->
       <div class="summary-card-2" id="summaryCard2">
-        <div class="title">🔧 Summary 2: Status Problem Aktif (Google Sheet Live)</div>
+        <div class="title">🔧 Summary 2: Status Problem Aktif </div>
         <div class="summary-item"><span class="summary-label">Problem Inspection:</span> <span id="sum2Inspect">-</span></div>
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
@@ -594,7 +599,8 @@
               <div class="cat-btn-title"><span>EOL</span> <div class="cat-indicator"></div></div>
               <div class="cat-btn-subtext" id="subtext_EOL"></div>
             </button>
-      </div>
+          </div>
+        </div>
 
       <!-- 4. PRAJUDGEMENT CARD TRIGGER -->
       <div class="prajudgement-trigger-card" id="praJudgementCard" style="display:none;">
@@ -694,7 +700,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCkF9fpk3-xfKH_HhmNNcAHzlh-3A5O9Ypwhwhuh9WBkfVomvxkTKycL0U24XKc20fJw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPMPGvJS6e3OvUMEnMGqaAv9s46kYutu9WNdZF1PJeogJB7oKo2Bcy8etd-C3jYyM/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -818,7 +824,7 @@
   function savePraData() {
     const desc = document.getElementById('praDescriptionInput').value.trim();
     if (!praData.imgBip || !praData.imgFinal || !desc) {
-      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+      alert("⚠️️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
       return;
     }
 
@@ -1048,7 +1054,7 @@
         handleStationControl();
 
       } else {
-        alert("⚠️️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
+        alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
         globalVinData = null;
         document.getElementById('carModelInput').value = "";
         document.getElementById('colourInput').value = "";
