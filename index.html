@@ -262,7 +262,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4XRszbX7OQEQV-ZHCUOpOpac3NtzvHJ96Fy_s16PO5dKo8v6QtPL6hZSkNUC3jaZn/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEtSHIvNGJq_O5D6uKTKYGX5qUKVNtq8y5DkmuQDvee_CtiO5_xH7zl3s4pJRWbH5I6A/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -641,6 +641,7 @@
   }
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
+  // MENGGUNAKAN FETCH POST STANDAR YANG KEBAL & ANTI URL-LIMIT ERROR
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
@@ -673,34 +674,23 @@
         praDescription: isPraActive ? praData.description : ""
       };
 
-      const cbName = 'jsonp_save_' + Math.round(100000 * Math.random());
-      const script = document.createElement('script');
-      script.src = `${SCRIPT_URL}?action=saveData&data=${encodeURIComponent(JSON.stringify(payload))}&callback=${cbName}&authuser=0`;
-
-      window[cbName] = function(res) {
-        delete window[cbName];
-        if (document.body.contains(script)) document.body.removeChild(script);
-        
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
         submitBtn.disabled = false;
         submitBtn.innerText = "SUBMIT DATA";
-
-        if (res.status === 'success') {
-          document.getElementById('displayVin').innerText = vin;
-          document.getElementById('successOverlay').style.display = 'flex';
-        } else {
-          alert("Gagal menyimpan data: " + res.message);
-        }
-      };
-
-      script.onerror = function() {
-        delete window[cbName];
-        if (document.body.contains(script)) document.body.removeChild(script);
+        document.getElementById('displayVin').innerText = vin;
+        document.getElementById('successOverlay').style.display = 'flex';
+      })
+      .catch(err => {
         submitBtn.disabled = false;
         submitBtn.innerText = "SUBMIT DATA";
-        alert("Terjadi kesalahan koneksi saat mengirim data.");
-      };
-
-      document.body.appendChild(script);
+        alert("Gagal mengirim data: " + err.message);
+      });
 
     } catch (err) {
       submitBtn.disabled = false;
