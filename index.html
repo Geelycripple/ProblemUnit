@@ -190,6 +190,7 @@
 
     <button type="submit" class="btn-submit" id="submitBtn">SUBMIT DATA</button>
   </form>
+  <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:12px;">versi 6 &bull; 06 Okt 2026</div>
 </div>
 
 <!-- POP-UP MODAL SUB-CATEGORY -->
@@ -261,7 +262,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysn7Sb7BnVN8QwJSt81Gn6sx9QuThiTbPWZq0H2ZPKZNL_KAkEDBLkytAMHUbABtXang/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7gnoiyueLaXvuQwCSSG158286gHog3BcR4jbgAK2XD_O1OQWsRWDHsiZMMmFTdiPgjA/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -605,14 +606,21 @@
   // Penyebab "harus Incognito": akun Google yang login di Chrome ikut terkirim & mengganggu akses Apps Script.
   function callApi(params, onOk, onFail, timeoutMs) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs || 10000);
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs || 12000);
     fetch(`${SCRIPT_URL}?${params}`, { method: 'GET', credentials: 'omit', redirect: 'follow', signal: ctrl.signal })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text().then(t => {
+          try { return JSON.parse(t); }
+          catch (e) { throw new Error('Respon bukan JSON: ' + t.slice(0, 80).replace(/\s+/g, ' ')); }
+        });
+      })
       .then(data => { clearTimeout(timer); onOk(data); })
       .catch(err => {
         clearTimeout(timer);
-        if (err && err.name === 'AbortError') { onFail('timeout'); return; }
-        jsonpFallback(params, onOk, onFail, 8000); // cadangan jika fetch ditolak browser
+        const d1 = (err && err.name === 'AbortError') ? 'fetch timeout' : ('fetch: ' + (err && err.message ? err.message : err));
+        // cadangan jika fetch gagal
+        jsonpFallback(params, onOk, function(d2) { onFail(d1 + ' | jsonp: ' + d2); }, 8000);
       });
   }
 
@@ -641,10 +649,46 @@
     btn.innerText = "SUBMIT DATA";
   }
 
-  function fetchMasterData(vin) {
-    document.getElementById('carModelInput').value = "Mencari data VIN...";
-    document.getElementById('colourInput').value = "Mencari data VIN...";
+  // Coba otomatis beberapa kali (Apps Script kadang lambat di panggilan pertama / setelah lama tidak dipakai)
+  function callApiRetry(params, onOk, onFail, opts) {
+    opts = opts || {};
+    const tries = opts.tries || 3;
+    const timeout = opts.timeout || 12000;
+    let n = 0;
+    (function attempt() {
+      n++;
+      callApi(params, onOk, function(why) {
+        if (n < tries) {
+          if (opts.onRetry) opts.onRetry(n + 1);
+          attempt();
+        } else {
+          onFail(why + ' (setelah ' + n + ' percobaan)');
+        }
+      }, timeout);
+    })();
+  }
 
+  // ---------- CACHE MASTER DATA DI HP (scan instan) ----------
+  const MASTER_KEY = 'geely_master_v1';
+  let masterMap = {};
+
+  function normVin(v) { return (v || '').toString().replace(/\s+/g, '').toUpperCase(); }
+
+  try {
+    const saved = localStorage.getItem(MASTER_KEY);
+    if (saved) masterMap = JSON.parse(saved) || {};
+  } catch (e) { masterMap = {}; }
+
+  function refreshMasterCache() {
+    callApiRetry('action=getMaster', function(res) {
+      if (res && res.status === 'success' && res.data) {
+        masterMap = res.data;
+        try { localStorage.setItem(MASTER_KEY, JSON.stringify(res.data)); } catch (e) {}
+      }
+    }, function() {}, { tries: 2, timeout: 30000 });
+  }
+
+  function fetchMasterData(vin) {
     const isSignOff = document.getElementById('stationSelect').value.toUpperCase() === 'SIGN OFF';
     const submitBtn = document.getElementById('submitBtn');
     if (isSignOff) {
@@ -653,50 +697,73 @@
       submitBtn.innerText = "Memuat history...";
     }
 
-    callApi(`action=searchVIN&vin=${encodeURIComponent(vin)}`, function(data) {
-      if (data.status === 'success') {
-        globalVinData = { vin: data.vin, carModel: data.carModel, colour: data.colour, existingProblem: null };
-        document.getElementById('carModelInput').value = data.carModel || '-';
-        document.getElementById('colourInput').value = data.colour || '-';
-
-        resetAllSelections();
-        handleStationControl();
-
-        if (isSignOff) loadHistory(vin);
-      } else {
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        globalVinData = null;
-        document.getElementById('carModelInput').value = "";
-        document.getElementById('colourInput').value = "";
-        document.getElementById('vinInput').value = "";
-        restoreSubmitBtn();
-        alert("⚠️ VIN (" + vin + ") TIDAK DITEMUKAN di MASTER DATA!\nSegera hubungi APM atau Scan Ulang.");
-      }
-    }, function() {
+    function clearVinFields() {
       globalVinData = null;
       document.getElementById('carModelInput').value = "";
       document.getElementById('colourInput').value = "";
       document.getElementById('vinInput').value = "";
       restoreSubmitBtn();
-      alert("Gagal terhubung ke Google Sheets / server lambat. Scan ulang VIN.");
-    }, 10000);
+    }
+
+    function onFound(model, colour) {
+      globalVinData = { vin: vin, carModel: model, colour: colour, existingProblem: null };
+      document.getElementById('carModelInput').value = model || '-';
+      document.getElementById('colourInput').value = colour || '-';
+      resetAllSelections();
+      handleStationControl();
+      if (isSignOff) loadHistory(vin);
+    }
+
+    // 1) Cari di cache HP: instan
+    const local = masterMap[normVin(vin)];
+    if (local) { onFound(local[0], local[1]); return; }
+
+    // 2) Tidak ada di cache (VIN baru / cache belum ada) -> tanya server, otomatis coba ulang
+    document.getElementById('carModelInput').value = "Mencari data VIN...";
+    document.getElementById('colourInput').value = "Mencari data VIN...";
+
+    callApiRetry(`action=searchVIN&vin=${encodeURIComponent(vin)}`, function(data) {
+      if (data.status === 'success') {
+        onFound(data.carModel, data.colour);
+      } else {
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        clearVinFields();
+        alert("⚠️ VIN (" + vin + ") TIDAK DITEMUKAN di MASTER DATA!\nSegera hubungi Admin.");
+      }
+    }, function(why) {
+      clearVinFields();
+      alert("Gagal terhubung ke Google Sheets. Scan ulang VIN.\n\nDetail: " + why);
+    }, {
+      tries: 3, timeout: 12000,
+      onRetry: function(n) {
+        document.getElementById('carModelInput').value = "Mencari data VIN... (percobaan " + n + ")";
+        document.getElementById('colourInput').value = "Mencari data VIN... (percobaan " + n + ")";
+      }
+    });
   }
 
   // History problem (hanya dibutuhkan di SIGN OFF), dimuat terpisah agar model/colour tampil cepat
   function loadHistory(vin) {
-    callApi(`action=getHistory&vin=${encodeURIComponent(vin)}`, function(res) {
+    callApiRetry(`action=getHistory&vin=${encodeURIComponent(vin)}`, function(res) {
       if (!globalVinData || globalVinData.vin !== vin) return;
       globalVinData.existingProblem = res.existingProblem || null;
       handleStationControl();
       restoreSubmitBtn();
-    }, function() {
+    }, function(why) {
       document.getElementById('submitBtn').innerText = "History gagal dimuat - scan ulang VIN";
-      alert("⚠️ Gagal memuat history problem. Scan ulang VIN.");
-    }, 15000);
+      alert("⚠️ Gagal memuat history problem. Scan ulang VIN.\n\nDetail: " + why);
+    }, {
+      tries: 3, timeout: 15000,
+      onRetry: function(n) {
+        document.getElementById('submitBtn').innerText = "Memuat history... (percobaan " + n + ")";
+      }
+    });
   }
 
-  // Pemanasan server saat halaman dibuka (mengurangi cold start)
+  // Pemanasan server + perbarui cache master saat halaman dibuka, lalu ping berkala
   callApi('action=ping', function() {}, function() {}, 15000);
+  refreshMasterCache();
+  setInterval(function() { callApi('action=ping', function() {}, function() {}, 15000); }, 240000);
 
   // ---------- SCANNER ----------
   let isScanning = false;
