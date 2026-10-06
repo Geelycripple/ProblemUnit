@@ -259,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxI1x9bijneINIxDgjTResS0UeXmpVTx7HdJ2GGxhiyBKsPejv11B0lu5lqtCi5APGWpg/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxt3YKQ6WatF2hA4lIfYWiJaJHq4GCRJSN_mrk-gbkwUC4Qzoki7MzJSz0ApUHOKzZLJg/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -361,63 +361,73 @@
     document.getElementById('praModal').style.display = 'flex';
   });
 
-  function closePraModal() { document.getElementById('praModal').style.display = 'none'; }
-
   function savePraData() {
     const desc = document.getElementById('praDescriptionInput').value.trim();
     if (!praData.imgBip || !praData.imgFinal || !desc) {
-      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
-      return;
+        alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+        return;
     }
-    praData.problemInspection = processInspectionData(praData.historyInspection, praData.selectedInspection);
-    praData.problemAfterInspection = processInspectionData(praData.historyAfterInspection, praData.selectedAfterInspection);
+    
     praData.description = desc;
     praData.active = true;
-    updatePraCardUI();
-    closePraModal();
-  }
 
-  function processInspectionData(historyProblems, currentSelectedArray) {
-    let resultList = [];
-    
-    // 1. Ubah history dari Google Sheet menjadi array
-    let historyArr = [];
-    if (historyProblems) {
-        historyArr = historyProblems.split(',').map(s => s.trim());
+    // Gunakan try-catch agar jika proses pengolahan problem ada kendala, modal tetap bisa tertutup
+    try {
+        if (typeof processInspectionData === 'function') {
+            praData.problemInspection = processInspectionData(praData.historyInspection, praData.selectedInspection);
+            praData.problemAfterInspection = processInspectionData(praData.historyAfterInspection, praData.selectedAfterInspection);
+        }
+    } catch (err) {
+        console.error("Error processing inspection data:", err);
     }
 
-    // 2. Evaluasi problem dari history sebelumnya
+    updatePraCardUI();
+    closePraModal(); // Pastikan modal tertutup
+}
+
+  function processInspectionData(historyString, currentSelectedArray) {
+    let finalItems = [];
+    
+    // 1. Ambil data history dari Google Sheet (pisahkan dengan koma)
+    let historyArr = [];
+    if (historyString) {
+        historyArr = historyString.split(',').map(s => s.trim()).filter(s => s !== "");
+    }
+
+    // 2. Petakan status dari history lama
     historyArr.forEach(item => {
-        if (!item) return;
-        // Bersihkan tanda coret lama jika sudah ada
-        let cleanItem = item.replace(/~/g, '').trim(); 
-        
-        // Jika di aplikasi (UI) masih dicentang/aktif, masukkan normal
-        if (currentSelectedArray.includes(cleanItem)) {
-            if (!resultList.includes(cleanItem)) {
-                resultList.push(cleanItem);
+        let cleanName = item.replace(/~/g, '').trim();
+        let wasAlreadyDone = item.startsWith('~') && item.endsWith('~');
+
+        // Jika item ini masih dipilih/dicentang di UI aplikasi saat ini
+        if (currentSelectedArray.includes(cleanName)) {
+            // Masukkan sebagai item aktif biasa
+            if (!finalItems.includes(cleanName)) {
+                finalItems.push(cleanName);
             }
         } else {
-            // Jika di aplikasi sudah di-uncheck (artinya sudah CLEAR/DONE), 
-            // maka PERTAHANKAN atau BERIKAN tanda coret (~item~) di Google Sheet
-            let crossedItem = `~${cleanItem}~`;
-            if (!resultList.includes(crossedItem) && !resultList.includes(cleanItem)) {
-                resultList.push(crossedItem);
+            // Jika di UI TIDAK dicentang (artinya di-uncheck / sudah CLEAR/DONE)
+            // Atau memang dari history sebelumnya sudah tercoret, pertahankan tanda coretnya!
+            let crossed = `~${cleanName}~`;
+            if (!finalItems.includes(crossed) && !finalItems.includes(cleanName)) {
+                finalItems.push(crossed);
             }
         }
     });
 
-    // 3. Masukkan Additional Problem baru yang dipilih operator saat scan ulang (jika belum ada di history)
+    // 3. Tambahkan Additional Problem baru yang dipilih di UI (yang belum ada sama sekali di history)
     currentSelectedArray.forEach(item => {
         if (!item) return;
-        let isExist = historyArr.some(h => h.replace(/~/g, '').trim() === item);
-        if (!isExist && !resultList.includes(item)) {
-            resultList.push(item);
+        let existsInHistory = historyArr.some(h => h.replace(/~/g, '').trim() === item);
+        if (!existsInHistory) {
+            if (!finalItems.includes(item)) {
+                finalItems.push(item);
+            }
         }
     });
 
-    return resultList.join(', ');
-}
+    return finalItems.join(', ');
+}}
   function updatePraCardUI() {
     const card = document.getElementById('praJudgementCard');
     const statusText = document.getElementById('praStatusText');
