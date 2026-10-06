@@ -414,11 +414,11 @@
   function captureCamPhoto() {
     const video = document.getElementById('fullCamVideo');
     const canvas = document.getElementById('hiddenCanvas');
-    canvas.width = 400;
-    canvas.height = 300;
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const base64Img = canvas.toDataURL('image/jpeg', 0.4);
+    const base64Img = canvas.toDataURL('image/jpeg', 0.9);
 
     if (currentCamTarget === 'bip') {
       praData.imgBip = base64Img;
