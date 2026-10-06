@@ -259,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEm5i3lW3S0KYQWvTqRMpSpyAV-kgZ4haaKyIl0Df4cQpYn7Y0Cuago8PQ3ThbFvgW/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzx9LzWlMi9c66bWY7r6JMdnCapPAhKPzxZQIXwTiQbmCf8lyItqOUznXDDBByCpLoa1w/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -397,13 +397,16 @@
 }
 // Fungsi helper yang bersih di bagian paling bawah skrip
 function processInspectionData(historyString, currentSelectedArray) {
-    let finalItems = [];
+    console.log("History dari Sheet:", historyString); 
+    console.log("Pilihan di App saat ini:", currentSelectedArray);
     
+    let finalItems = [];
     let historyArr = [];
     if (historyString) {
         historyArr = historyString.split(',').map(s => s.trim()).filter(s => s !== "");
     }
 
+    // 1. Cek item dari history untuk dicoret jika tidak dipilih lagi
     historyArr.forEach(item => {
         let cleanName = item.replace(/~/g, '').trim();
         if (currentSelectedArray.includes(cleanName)) {
@@ -418,6 +421,7 @@ function processInspectionData(historyString, currentSelectedArray) {
         }
     });
 
+    // 2. Cek item baru yang belum ada di history
     currentSelectedArray.forEach(item => {
         if (!item) return;
         let existsInHistory = historyArr.some(h => h.replace(/~/g, '').trim() === item);
