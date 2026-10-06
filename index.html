@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Unit Problem Report</title>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=RajdhaFni:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
@@ -29,7 +29,7 @@
     .form-blur-area { transition: all 0.3s ease; }
     .is-blurred { filter: blur(4px); opacity: 0.3; pointer-events: none; user-select: none; }
     .btn-scan { width: 100%; padding: 12px; background: #00a86b; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
-    
+
     .summary-card-1 { display: none; background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 12px; padding: 12px 15px; margin-bottom: 12px; font-size: 14px; color: #2b6cb0; }
     .summary-card-1 .title { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: #2c5282; border-bottom: 1px dashed #bee3f8; padding-bottom: 4px; }
     .summary-card-2 { display: none; background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 12px; padding: 12px 15px; margin-bottom: 16px; font-size: 14px; color: #22543d; }
@@ -99,7 +99,7 @@
 
 <div class="card">
   <h2>UNIT PROBLEM GEELY</h2>
-  
+
   <form id="problemForm">
     <div class="row-2">
       <div class="form-group">
@@ -210,6 +210,12 @@
   <div class="modal-card">
     <div class="modal-title" style="color:#b45309;">⚠️PRAJUDGEMENT EVIDENCE⚠️</div>
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
+
+    <div class="form-group">
+      <label>Problem yang menunggu Judgement APM*</label>
+      <div id="praCatList" class="modal-parts-box"></div>
+    </div>
+
     <div class="evidence-box">
       <div class="evidence-header">1. Foto Bukti Checksheet BIP*</div>
       <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('bip')">📷 Ambil Foto CheckSheet BIP</button>
@@ -259,7 +265,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGH-LXKw-TwUsVhT9cGpAB1_WEPOj1tV_WnK6BCgpCVPJFu1YOzn77Tyl_dL_UdjNKCg/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5Svnv2qfJiYUxh63_1HzBEFJsHp6jK1XfbP5tSU0wqHDyqgrmMzZfUDqClwH9AjypBw/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -277,10 +283,10 @@
   };
 
   let globalVinData = null;
-  let subSelections = {}; 
+  let subSelections = {};
   let activeCategoryBtn = null;
 
-  let praData = { active: false, imgBip: "", imgFinal: "", description: "" };
+  let praData = { active: false, imgBip: "", imgFinal: "", description: "", categories: [] };
   let currentCamTarget = "";
   let camStream = null;
 
@@ -296,7 +302,7 @@
     subSelections = {};
     document.querySelectorAll('.category-card-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.cat-btn-subtext').forEach(div => div.innerText = "");
-    praData = { active: false, imgBip: "", imgFinal: "", description: "" };
+    praData = { active: false, imgBip: "", imgFinal: "", description: "", categories: [] };
     updatePraCardUI();
   }
 
@@ -357,83 +363,41 @@
     if (el) el.innerText = partsList.length > 0 ? partsList.join(', ') : "";
   }
 
+  // ---------- PRAJUDGEMENT ----------
   document.getElementById('praJudgementCard').addEventListener('click', function() {
+    const cats = [...getSelectedCategoryList('inspect'), ...getSelectedCategoryList('after')];
+    document.getElementById('praCatList').innerHTML = cats.length
+      ? cats.map(c => `<label class="modal-part-item"><input type="checkbox" value="${c}" ${(praData.categories || []).includes(c) ? 'checked' : ''}> <span>${c}</span></label>`).join('')
+      : '<div class="modal-subtitle">Pilih problem terlebih dahulu.</div>';
     document.getElementById('praModal').style.display = 'flex';
   });
+
+  function closePraModal() {
+    document.getElementById('praModal').style.display = 'none';
+  }
 
   function savePraData() {
     const descInput = document.getElementById('praDescriptionInput');
     const desc = descInput ? descInput.value.trim() : "";
-    
-    if (!praData.imgBip || !praData.imgFinal || !desc) {
-        alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
-        return;
+    const cats = [...document.querySelectorAll('#praCatList input:checked')].map(c => c.value);
+
+    if (cats.length === 0) {
+      alert("⚠️ Pilih minimal 1 problem yang menunggu Judgement APM!");
+      return;
     }
-    
+    if (!praData.imgBip || !praData.imgFinal || !desc) {
+      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+      return;
+    }
+
+    praData.categories = cats;
     praData.description = desc;
     praData.active = true;
 
-    // Pemrosesan problem aman dengan try-catch
-    try {
-        if (typeof processInspectionData === 'function') {
-            praData.problemInspection = processInspectionData(praData.historyInspection, praData.selectedInspection);
-            praData.problemAfterInspection = processInspectionData(praData.historyAfterInspection, praData.selectedAfterInspection);
-        }
-    } catch (err) {
-        console.error("Error processing inspection data:", err);
-    }
+    updatePraCardUI();
+    closePraModal();
+  }
 
-    if (typeof updatePraCardUI === 'function') {
-        updatePraCardUI();
-    }
-    
-    if (typeof closePraModal === 'function') {
-        closePraModal();
-    } else {
-        // Fallback pengaman jika fungsi closePraModal terpanggil manual
-        const modal = document.getElementById('praModal');
-        if (modal) modal.style.display = 'none';
-    }
-}
-// Fungsi helper yang bersih di bagian paling bawah skrip
-function processInspectionData(historyString, currentSelectedArray) {
-    console.log("History dari Sheet:", historyString); 
-    console.log("Pilihan di App saat ini:", currentSelectedArray);
-    
-    let finalItems = [];
-    let historyArr = [];
-    if (historyString) {
-        historyArr = historyString.split(',').map(s => s.trim()).filter(s => s !== "");
-    }
-
-    // 1. Cek item dari history untuk dicoret jika tidak dipilih lagi
-    historyArr.forEach(item => {
-        let cleanName = item.replace(/~/g, '').trim();
-        if (currentSelectedArray.includes(cleanName)) {
-            if (!finalItems.includes(cleanName)) {
-                finalItems.push(cleanName);
-            }
-        } else {
-            let crossed = `~${cleanName}~`;
-            if (!finalItems.includes(crossed) && !finalItems.includes(cleanName)) {
-                finalItems.push(crossed);
-            }
-        }
-    });
-
-    // 2. Cek item baru yang belum ada di history
-    currentSelectedArray.forEach(item => {
-        if (!item) return;
-        let existsInHistory = historyArr.some(h => h.replace(/~/g, '').trim() === item);
-        if (!existsInHistory) {
-            if (!finalItems.includes(item)) {
-                finalItems.push(item);
-            }
-        }
-    });
-
-    return finalItems.join(', ');
-}
   function updatePraCardUI() {
     const card = document.getElementById('praJudgementCard');
     const statusText = document.getElementById('praStatusText');
@@ -446,6 +410,7 @@ function processInspectionData(historyString, currentSelectedArray) {
     }
   }
 
+  // ---------- KAMERA EVIDENCE ----------
   function openFullscreenCam(target) {
     currentCamTarget = target;
     document.getElementById('fullscreenCamModal').style.display = 'flex';
@@ -488,6 +453,7 @@ function processInspectionData(historyString, currentSelectedArray) {
     closeFullscreenCam();
   }
 
+  // ---------- SUMMARY ----------
   function updateSummaryCard2Live() {
     const currentStation = document.getElementById('stationSelect').value.toUpperCase();
     if (currentStation !== 'SIGN OFF') return;
@@ -593,7 +559,7 @@ function processInspectionData(historyString, currentSelectedArray) {
       const parts = probMap[categoryName];
       if (parts && parts.length > 0) {
         subSelections[categoryName] = parts;
-        
+
         const btn = document.querySelector(`.category-card-btn[data-section="${sectionName}"][data-cat="${categoryName}"]`);
         if (btn) {
           btn.classList.add('active');
@@ -619,6 +585,7 @@ function processInspectionData(historyString, currentSelectedArray) {
     return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
+  // ---------- VIN ----------
   function fetchMasterData(vin) {
     document.getElementById('carModelInput').value = "Mencari data VIN...";
     document.getElementById('colourInput').value = "Mencari data VIN...";
@@ -657,6 +624,7 @@ function processInspectionData(historyString, currentSelectedArray) {
     document.body.appendChild(script);
   }
 
+  // ---------- SCANNER ----------
   let isScanning = false;
   document.getElementById('openScanBtn').addEventListener('click', function() {
     document.getElementById('scannerModal').style.display = 'flex';
@@ -694,10 +662,10 @@ function processInspectionData(historyString, currentSelectedArray) {
   }
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
 
-  // MENGGUNAKAN FETCH POST STANDAR YANG KEBAL & ANTI URL-LIMIT ERROR
+  // ---------- SUBMIT ----------
   document.getElementById('problemForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const vin = document.getElementById('vinInput').value;
     if (!vin) { alert("Silakan scan VIN terlebih dahulu!"); return; }
 
@@ -717,14 +685,15 @@ function processInspectionData(historyString, currentSelectedArray) {
         carModel: document.getElementById('carModelInput').value,
         colour: document.getElementById('colourInput').value,
         station: document.getElementById('stationSelect').value,
-        
+
         inspectItems: inspectItems,
         afterItems: afterItems,
 
         isPraJudgement: isPraActive,
         imgBip: isPraActive ? praData.imgBip : "",
         imgFinal: isPraActive ? praData.imgFinal : "",
-        praDescription: isPraActive ? praData.description : ""
+        praDescription: isPraActive ? praData.description : "",
+        praCategories: isPraActive ? praData.categories : []
       };
 
       fetch(SCRIPT_URL, {
