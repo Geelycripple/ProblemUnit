@@ -259,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxt3YKQ6WatF2hA4lIfYWiJaJHq4GCRJSN_mrk-gbkwUC4Qzoki7MzJSz0ApUHOKzZLJg/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEm5i3lW3S0KYQWvTqRMpSpyAV-kgZ4haaKyIl0Df4cQpYn7Y0Cuago8PQ3ThbFvgW/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -362,7 +362,9 @@
   });
 
   function savePraData() {
-    const desc = document.getElementById('praDescriptionInput').value.trim();
+    const descInput = document.getElementById('praDescriptionInput');
+    const desc = descInput ? descInput.value.trim() : "";
+    
     if (!praData.imgBip || !praData.imgFinal || !desc) {
         alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
         return;
@@ -381,10 +383,18 @@
         console.error("Error processing inspection data:", err);
     }
 
-    updatePraCardUI();
-    closePraModal();
+    if (typeof updatePraCardUI === 'function') {
+        updatePraCardUI();
+    }
+    
+    if (typeof closePraModal === 'function') {
+        closePraModal();
+    } else {
+        // Fallback pengaman jika fungsi closePraModal terpanggil manual
+        const modal = document.getElementById('praModal');
+        if (modal) modal.style.display = 'none';
+    }
 }
-
 // Fungsi helper yang bersih di bagian paling bawah skrip
 function processInspectionData(historyString, currentSelectedArray) {
     let finalItems = [];
