@@ -265,7 +265,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5Svnv2qfJiYUxh63_1HzBEFJsHp6jK1XfbP5tSU0wqHDyqgrmMzZfUDqClwH9AjypBw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjsgZLSEsVhK58-YRRiepF7JeB3iD0oRpdZ2HYEDTnZsopHKtXGUqIx8io1vwL1r3dbw/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -519,14 +519,18 @@
       setSectionLock(secInspect, false);
       setSectionLock(secAfter, false);
 
-      if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.found) {
-        document.getElementById('sum1Vin').innerText = globalVinData.vin;
-        document.getElementById('sum1Date').innerText = globalVinData.existingProblem.lastDate || "-";
-        document.getElementById('sum1Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
-        document.getElementById('sum1After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
+      if (globalVinData && globalVinData.existingProblem && globalVinData.existingProblem.hasHistory) {
+        const ep = globalVinData.existingProblem;
 
-        document.getElementById('sum2Inspect').innerHTML = formatBadge(globalVinData.existingProblem.activeInspect || "-");
-        document.getElementById('sum2After').innerHTML = formatBadge(globalVinData.existingProblem.activeAfter || "-");
+        // Card 1: HISTORY kumulatif (semua problem yang pernah tercatat, tidak berkurang walau DONE)
+        document.getElementById('sum1Vin').innerText = globalVinData.vin;
+        document.getElementById('sum1Date').innerText = ep.lastDate || "-";
+        document.getElementById('sum1Inspect').innerHTML = formatHistory(ep.historyInspect);
+        document.getElementById('sum1After').innerHTML = formatHistory(ep.historyAfter);
+
+        // Card 2: STATUS realtime (hanya yang masih aktif; kosong = PROBLEM DONE)
+        document.getElementById('sum2Inspect').innerHTML = formatBadge(ep.activeInspect || "-");
+        document.getElementById('sum2After').innerHTML = formatBadge(ep.activeAfter || "-");
 
         card1.style.display = 'block';
         card2.style.display = 'block';
@@ -576,6 +580,11 @@
     sectionElem.querySelectorAll('button, textarea').forEach(btn => {
       if (btn.id !== 'submitBtn') btn.disabled = isLocked;
     });
+  }
+
+  function formatHistory(probStr) {
+    if (!probStr || probStr === "-") return '<span class="badge-prob">-</span>';
+    return probStr.split(',').map(p => `<span class="badge-prob">${p.trim()}</span>`).join(' ');
   }
 
   function formatBadge(probStr) {
