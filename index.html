@@ -259,7 +259,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyBZrz7CUub4dq4klaztyIR2-sAq-Rg604hb08uKD1p2mEissDcq6-hW_JQk4MjkfplVQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxI1x9bijneINIxDgjTResS0UeXmpVTx7HdJ2GGxhiyBKsPejv11B0lu5lqtCi5APGWpg/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -377,6 +377,47 @@
     closePraModal();
   }
 
+  function processInspectionData(historyProblems, currentSelectedArray) {
+    let resultList = [];
+    
+    // 1. Ubah history dari Google Sheet menjadi array
+    let historyArr = [];
+    if (historyProblems) {
+        historyArr = historyProblems.split(',').map(s => s.trim());
+    }
+
+    // 2. Evaluasi problem dari history sebelumnya
+    historyArr.forEach(item => {
+        if (!item) return;
+        // Bersihkan tanda coret lama jika sudah ada
+        let cleanItem = item.replace(/~/g, '').trim(); 
+        
+        // Jika di aplikasi (UI) masih dicentang/aktif, masukkan normal
+        if (currentSelectedArray.includes(cleanItem)) {
+            if (!resultList.includes(cleanItem)) {
+                resultList.push(cleanItem);
+            }
+        } else {
+            // Jika di aplikasi sudah di-uncheck (artinya sudah CLEAR/DONE), 
+            // maka PERTAHANKAN atau BERIKAN tanda coret (~item~) di Google Sheet
+            let crossedItem = `~${cleanItem}~`;
+            if (!resultList.includes(crossedItem) && !resultList.includes(cleanItem)) {
+                resultList.push(crossedItem);
+            }
+        }
+    });
+
+    // 3. Masukkan Additional Problem baru yang dipilih operator saat scan ulang (jika belum ada di history)
+    currentSelectedArray.forEach(item => {
+        if (!item) return;
+        let isExist = historyArr.some(h => h.replace(/~/g, '').trim() === item);
+        if (!isExist && !resultList.includes(item)) {
+            resultList.push(item);
+        }
+    });
+
+    return resultList.join(', ');
+}
   function updatePraCardUI() {
     const card = document.getElementById('praJudgementCard');
     const statusText = document.getElementById('praStatusText');
