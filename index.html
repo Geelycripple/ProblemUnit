@@ -265,7 +265,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjsgZLSEsVhK58-YRRiepF7JeB3iD0oRpdZ2HYEDTnZsopHKtXGUqIx8io1vwL1r3dbw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5OW4R-LTwrzcFQf1qWphivzOxjESLRa0h56B_SGaekepW_yWLubUBHr3_k2-Z1Mp5Vg/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -595,43 +595,87 @@
   }
 
   // ---------- VIN ----------
+  // JSONP helper dengan timeout
+  function jsonp(params, onOk, onFail, timeoutMs) {
+    const cbName = 'jsonp_' + Math.round(1000000 * Math.random());
+    const script = document.createElement('script');
+    let done = false;
+    let timer = null;
+    const cleanup = () => {
+      done = true;
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+    timer = setTimeout(() => { if (!done) { cleanup(); onFail('timeout'); } }, timeoutMs || 10000);
+    window[cbName] = function(data) { if (done) return; cleanup(); onOk(data); };
+    script.onerror = function() { if (done) return; cleanup(); onFail('error'); };
+    script.src = `${SCRIPT_URL}?${params}&callback=${cbName}&authuser=0`;
+    document.body.appendChild(script);
+  }
+
+  function restoreSubmitBtn() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.innerText = "SUBMIT DATA";
+  }
+
   function fetchMasterData(vin) {
     document.getElementById('carModelInput').value = "Mencari data VIN...";
     document.getElementById('colourInput').value = "Mencari data VIN...";
 
-    const cbName = 'jsonp_master_' + Math.round(100000 * Math.random());
-    const script = document.createElement('script');
-    script.src = `${SCRIPT_URL}?action=searchVIN&vin=${encodeURIComponent(vin)}&callback=${cbName}&authuser=0`;
+    const isSignOff = document.getElementById('stationSelect').value.toUpperCase() === 'SIGN OFF';
+    const submitBtn = document.getElementById('submitBtn');
+    if (isSignOff) {
+      // Cegah submit sebelum history termuat (supaya tidak salah menandai DONE)
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Memuat history...";
+    }
 
-    window[cbName] = function(data) {
-      delete window[cbName];
-      if (document.body.contains(script)) document.body.removeChild(script);
-
+    jsonp(`action=searchVIN&vin=${encodeURIComponent(vin)}`, function(data) {
       if (data.status === 'success') {
-        globalVinData = data;
+        globalVinData = { vin: data.vin, carModel: data.carModel, colour: data.colour, existingProblem: null };
         document.getElementById('carModelInput').value = data.carModel || '-';
         document.getElementById('colourInput').value = data.colour || '-';
 
         resetAllSelections();
         handleStationControl();
 
+        if (isSignOff) loadHistory(vin);
       } else {
-        alert("⚠️ VIN (" + vin + ") Tidak ditemukan pada sheet MASTER DATA!");
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         globalVinData = null;
         document.getElementById('carModelInput').value = "";
         document.getElementById('colourInput').value = "";
         document.getElementById('vinInput').value = "";
+        restoreSubmitBtn();
+        alert("⚠️ VIN (" + vin + ") TIDAK DITEMUKAN di MASTER DATA!\nSegera hubungi APM.");
       }
-    };
-
-    script.onerror = function() {
-      delete window[cbName];
-      if (document.body.contains(script)) document.body.removeChild(script);
-      alert("Gagal terhubung ke Google Sheets.");
-    };
-
-    document.body.appendChild(script);
+    }, function() {
+      globalVinData = null;
+      document.getElementById('carModelInput').value = "";
+      document.getElementById('colourInput').value = "";
+      document.getElementById('vinInput').value = "";
+      restoreSubmitBtn();
+      alert("Gagal terhubung ke Google Sheets / server lambat. Scan ulang VIN.");
+    }, 10000);
   }
+
+  // History problem (hanya dibutuhkan di SIGN OFF), dimuat terpisah agar model/colour tampil cepat
+  function loadHistory(vin) {
+    jsonp(`action=getHistory&vin=${encodeURIComponent(vin)}`, function(res) {
+      if (!globalVinData || globalVinData.vin !== vin) return;
+      globalVinData.existingProblem = res.existingProblem || null;
+      handleStationControl();
+      restoreSubmitBtn();
+    }, function() {
+      document.getElementById('submitBtn').innerText = "History gagal dimuat - scan ulang VIN";
+      alert("⚠️ Gagal memuat history problem. Scan ulang VIN.");
+    }, 15000);
+  }
+
+  // Pemanasan server saat halaman dibuka (mengurangi cold start)
+  jsonp('action=ping', function() {}, function() {}, 15000);
 
   // ---------- SCANNER ----------
   let isScanning = false;
