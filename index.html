@@ -212,7 +212,7 @@
     <div class="modal-subtitle">Sertakan bukti Checksheet & Deskripsi sebelum eskalasi ke APM Geely:</div>
 
     <div class="form-group">
-      <label>Problem yang menunggu Judgement APM*</label>
+      <label>Centang problem yang menunggu Judgement APM*</label>
       <div id="praCatList" class="modal-parts-box"></div>
     </div>
 
@@ -225,10 +225,6 @@
       <div class="evidence-header">2. Foto Bukti CheckSheet Final Inspection*</div>
       <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('final')">📷 Ambil Foto Final Inspection</button>
       <img id="previewFinal" class="img-preview" alt="Preview Final">
-    </div>
-    <div class="form-group">
-      <label>3. Deskripsi Masalah menunggu Judgement APM*</label>
-      <textarea id="praDescriptionInput" rows="3" placeholder="Jelaskan detail masalah..."></textarea>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-modal-cancel" onclick="closePraModal()">Batal</button>
@@ -265,7 +261,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5OW4R-LTwrzcFQf1qWphivzOxjESLRa0h56B_SGaekepW_yWLubUBHr3_k2-Z1Mp5Vg/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwACx6kI_Fm1ZHYB_61zbtKoNHzesy_takIAQ9Dhs2035lYk7AuMPlO_JPjhunlD9ewGQ/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -286,7 +282,7 @@
   let subSelections = {};
   let activeCategoryBtn = null;
 
-  let praData = { active: false, imgBip: "", imgFinal: "", description: "", categories: [] };
+  let praData = { active: false, imgBip: "", imgFinal: "", selected: [] };
   let currentCamTarget = "";
   let camStream = null;
 
@@ -302,7 +298,7 @@
     subSelections = {};
     document.querySelectorAll('.category-card-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.cat-btn-subtext').forEach(div => div.innerText = "");
-    praData = { active: false, imgBip: "", imgFinal: "", description: "", categories: [] };
+    praData = { active: false, imgBip: "", imgFinal: "", selected: [] };
     updatePraCardUI();
   }
 
@@ -364,11 +360,25 @@
   }
 
   // ---------- PRAJUDGEMENT ----------
+  // Problem yang masih menyala di layar utama, per area: "Bending Engine Hood"
+  function getLitProblemItems() {
+    const out = [];
+    [...documentSelectedObjects('inspect'), ...documentSelectedObjects('after')].forEach(o => {
+      o.description.split(', ').forEach(d => { if (d && !out.includes(d)) out.push(d); });
+    });
+    return out;
+  }
+
   document.getElementById('praJudgementCard').addEventListener('click', function() {
-    const cats = [...getSelectedCategoryList('inspect'), ...getSelectedCategoryList('after')];
-    document.getElementById('praCatList').innerHTML = cats.length
-      ? cats.map(c => `<label class="modal-part-item"><input type="checkbox" value="${c}" ${(praData.categories || []).includes(c) ? 'checked' : ''}> <span>${c}</span></label>`).join('')
-      : '<div class="modal-subtitle">Pilih problem terlebih dahulu.</div>';
+    const items = getLitProblemItems();
+    if (items.length === 0) {
+      alert("⚠️ Belum ada problem yang menyala. Pilih problem di layar utama terlebih dahulu.");
+      return;
+    }
+    const prev = praData.selected || [];
+    document.getElementById('praCatList').innerHTML = items
+      .map(d => `<label class="modal-part-item"><input type="checkbox" value="${d}" ${prev.includes(d) ? 'checked' : ''}> <span>${d}</span></label>`)
+      .join('');
     document.getElementById('praModal').style.display = 'flex';
   });
 
@@ -377,23 +387,19 @@
   }
 
   function savePraData() {
-    const descInput = document.getElementById('praDescriptionInput');
-    const desc = descInput ? descInput.value.trim() : "";
-    const cats = [...document.querySelectorAll('#praCatList input:checked')].map(c => c.value);
+    const selected = [...document.querySelectorAll('#praCatList input:checked')].map(c => c.value);
 
-    if (cats.length === 0) {
-      alert("⚠️ Pilih minimal 1 problem yang menunggu Judgement APM!");
+    if (selected.length === 0) {
+      alert("⚠️ Centang minimal 1 problem yang menunggu Judgement APM!");
       return;
     }
-    if (!praData.imgBip || !praData.imgFinal || !desc) {
-      alert("⚠️ Mohon lengkapi Foto BIP, Foto Final Inspection, dan Deskripsi Masalah!");
+    if (!praData.imgBip || !praData.imgFinal) {
+      alert("⚠️ Mohon lengkapi Foto BIP dan Foto Final Inspection!");
       return;
     }
 
-    praData.categories = cats;
-    praData.description = desc;
+    praData.selected = selected;
     praData.active = true;
-
     updatePraCardUI();
     closePraModal();
   }
@@ -649,7 +655,7 @@
         document.getElementById('colourInput').value = "";
         document.getElementById('vinInput').value = "";
         restoreSubmitBtn();
-        alert("⚠️ VIN (" + vin + ") TIDAK DITEMUKAN di MASTER DATA!\nSegera hubungi APM.");
+        alert("⚠️ VIN (" + vin + ") TIDAK DITEMUKAN di MASTER DATA!\nSegera hubungi APM atau Coba Scan Ulang.");
       }
     }, function() {
       globalVinData = null;
@@ -722,6 +728,17 @@
     const vin = document.getElementById('vinInput').value;
     if (!vin) { alert("Silakan scan VIN terlebih dahulu!"); return; }
 
+    // Evidence PRAJUDGEMENT: hanya problem yang dicentang DAN masih menyala yang dikirim
+    let praSelected = [];
+    if (praData && praData.active === true) {
+      const lit = getLitProblemItems();
+      praSelected = (praData.selected || []).filter(d => lit.includes(d));
+      if (praSelected.length === 0) {
+        alert("⚠️ Problem PRAJUDGEMENT yang dicentang sudah tidak menyala. Buka kartu PRAJUDGEMENT dan centang ulang.");
+        return;
+      }
+    }
+
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.innerText = "Mengirim Data...";
@@ -745,8 +762,7 @@
         isPraJudgement: isPraActive,
         imgBip: isPraActive ? praData.imgBip : "",
         imgFinal: isPraActive ? praData.imgFinal : "",
-        praDescription: isPraActive ? praData.description : "",
-        praCategories: isPraActive ? praData.categories : []
+        praProblems: isPraActive ? praSelected.join(', ') : ""
       };
 
       fetch(SCRIPT_URL, {
