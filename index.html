@@ -371,7 +371,7 @@
     praData.description = desc;
     praData.active = true;
 
-    // Gunakan try-catch agar jika proses pengolahan problem ada kendala, modal tetap bisa tertutup
+    // Pemrosesan problem aman dengan try-catch
     try {
         if (typeof processInspectionData === 'function') {
             praData.problemInspection = processInspectionData(praData.historyInspection, praData.selectedInspection);
@@ -382,32 +382,25 @@
     }
 
     updatePraCardUI();
-    closePraModal(); // Pastikan modal tertutup
+    closePraModal();
 }
 
-  function processInspectionData(historyString, currentSelectedArray) {
+// Fungsi helper yang bersih di bagian paling bawah skrip
+function processInspectionData(historyString, currentSelectedArray) {
     let finalItems = [];
     
-    // 1. Ambil data history dari Google Sheet (pisahkan dengan koma)
     let historyArr = [];
     if (historyString) {
         historyArr = historyString.split(',').map(s => s.trim()).filter(s => s !== "");
     }
 
-    // 2. Petakan status dari history lama
     historyArr.forEach(item => {
         let cleanName = item.replace(/~/g, '').trim();
-        let wasAlreadyDone = item.startsWith('~') && item.endsWith('~');
-
-        // Jika item ini masih dipilih/dicentang di UI aplikasi saat ini
         if (currentSelectedArray.includes(cleanName)) {
-            // Masukkan sebagai item aktif biasa
             if (!finalItems.includes(cleanName)) {
                 finalItems.push(cleanName);
             }
         } else {
-            // Jika di UI TIDAK dicentang (artinya di-uncheck / sudah CLEAR/DONE)
-            // Atau memang dari history sebelumnya sudah tercoret, pertahankan tanda coretnya!
             let crossed = `~${cleanName}~`;
             if (!finalItems.includes(crossed) && !finalItems.includes(cleanName)) {
                 finalItems.push(crossed);
@@ -415,7 +408,6 @@
         }
     });
 
-    // 3. Tambahkan Additional Problem baru yang dipilih di UI (yang belum ada sama sekali di history)
     currentSelectedArray.forEach(item => {
         if (!item) return;
         let existsInHistory = historyArr.some(h => h.replace(/~/g, '').trim() === item);
@@ -427,7 +419,7 @@
     });
 
     return finalItems.join(', ');
-}}
+}
   function updatePraCardUI() {
     const card = document.getElementById('praJudgementCard');
     const statusText = document.getElementById('praStatusText');
