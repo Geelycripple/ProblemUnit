@@ -25,6 +25,25 @@
     .row-2 > div { flex: 1; }
     .station-box { background: #edf2f7; padding: 12px; border-radius: 12px; border: 2px solid #cbd5e0; margin-bottom: 16px; text-align: center; }
     .station-box select { text-align: center; text-align-last: center; }
+    .station-box { position: relative; z-index: 20; }
+
+    /* Dropdown pos kustom: rata tengah */
+    .pos-dd { position: relative; }
+    .pos-trigger { width: 100%; display: flex; align-items: center; justify-content: center; padding: 13px 44px; border: 1.5px solid #cbd5e0; border-radius: 12px; background: #ffffff; font-size: 16px; font-weight: 700; color: #1e293b; cursor: pointer; position: relative; box-shadow: 0 2px 6px rgba(15,23,42,0.06); transition: border-color .2s, box-shadow .2s; }
+    .pos-trigger .chev { position: absolute; right: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; stroke: #64748b; transition: transform .2s; }
+    .pos-dd.open .pos-trigger { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+    .pos-dd.open .chev { transform: rotate(180deg); }
+    .pos-placeholder { color: #64748b; font-weight: 600; }
+    .pos-dd.locked .pos-trigger { background: #edf2f7; color: #4a5568; cursor: not-allowed; box-shadow: none; }
+    .pos-dd.locked .chev { display: none; }
+    .pos-menu { list-style: none; margin: 8px 0 0; padding: 6px; position: absolute; left: 0; right: 0; z-index: 50; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 14px 30px rgba(15,23,42,0.18); display: none; }
+    .pos-dd.open .pos-menu { display: block; animation: posIn .15s ease-out; }
+    @keyframes posIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    .pos-item { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 13px 12px; border-radius: 10px; font-size: 15px; font-weight: 700; letter-spacing: .3px; color: #1e293b; cursor: pointer; }
+    .pos-item + .pos-item { margin-top: 2px; }
+    .pos-item:hover, .pos-item:active, .pos-item.selected { background: #eff6ff; color: #1d4ed8; }
+    .pos-item .dot { width: 9px; height: 9px; border-radius: 50%; background: #cbd5e1; flex-shrink: 0; }
+    .pos-item.selected .dot { background: #2563eb; box-shadow: 0 0 8px #2563eb; }
     .text-center-input { text-align: center; }
     .form-blur-area { transition: all 0.3s ease; }
     .is-blurred { filter: blur(4px); opacity: 0.3; pointer-events: none; user-select: none; }
@@ -114,12 +133,20 @@
 
     <div class="form-group station-box">
       <label style="color:#2b6cb0;">1. PILIH POS KERJA ANDA* (Pilih Dahulu)</label>
-      <select id="stationSelect" required>
+      <!-- select asli disembunyikan; dikendalikan oleh dropdown kustom di bawah -->
+      <select id="stationSelect" style="display:none;">
         <option value="">---=== Pilih Pos Anda ===---</option>
         <option value="INSPECTION">INSPECTION</option>
         <option value="AFTER INSPECTION">AFTER INSPECTION</option>
         <option value="SIGN OFF">SIGN OFF</option>
       </select>
+      <div class="pos-dd" id="posDd">
+        <button type="button" class="pos-trigger" id="posTrigger" aria-haspopup="listbox" aria-expanded="false">
+          <span id="posTriggerText" class="pos-placeholder">---=== Pilih Pos Anda ===---</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <ul class="pos-menu" id="posMenu" role="listbox"></ul>
+      </div>
       <small id="lockNotice" style="display:none; color:#e53e3e; font-weight:700; font-size:12px; margin-top:4px;">🔒 REFRESH WEB JIKA INGIN MENGGANTI POS ANDA</small>
     </div>
 
@@ -261,7 +288,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdtUIheOCLAsI3okO7f0NtGJfOgCVnoupFBmJ0yV9mi6rc9awJJYG-Q6Y1I8eWyKc0gQ/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeMtEk0OaExiAUu3eI09HXWaaJg5-7SzhoBCj8p7yuUZZJPyxiX3xwBPh78KQs_ZA33w/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -493,6 +520,44 @@
   }
 
   document.getElementById('stationSelect').addEventListener('change', handleStationControl);
+
+  // Dropdown pos kustom (rata tengah). Mengendalikan <select id="stationSelect"> agar kode lain tidak berubah.
+  (function initPosDropdown() {
+    const sel = document.getElementById('stationSelect');
+    const dd = document.getElementById('posDd');
+    const trig = document.getElementById('posTrigger');
+    const txt = document.getElementById('posTriggerText');
+    const menu = document.getElementById('posMenu');
+    const opts = Array.from(sel.options).filter(o => o.value);
+
+    menu.innerHTML = opts.map(o => `<li class="pos-item" role="option" data-value="${o.value}"><span class="dot"></span><span>${o.text}</span></li>`).join('');
+
+    function close() { dd.classList.remove('open'); trig.setAttribute('aria-expanded', 'false'); }
+
+    function sync() {
+      if (sel.value) { txt.textContent = sel.value; txt.classList.remove('pos-placeholder'); }
+      dd.classList.toggle('locked', sel.disabled);
+      menu.querySelectorAll('.pos-item').forEach(li => li.classList.toggle('selected', li.dataset.value === sel.value));
+    }
+
+    trig.addEventListener('click', function() {
+      if (sel.disabled) return;
+      const open = dd.classList.toggle('open');
+      trig.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    menu.addEventListener('click', function(e) {
+      const li = e.target.closest('.pos-item');
+      if (!li) return;
+      sel.value = li.dataset.value;
+      close();
+      sel.dispatchEvent(new Event('change')); // menjalankan handleStationControl (yang juga mengunci pos)
+      sync();
+    });
+
+    document.addEventListener('click', function(e) { if (!dd.contains(e.target)) close(); });
+    sync();
+  })();
 
   function handleStationControl() {
     const stationElem = document.getElementById('stationSelect');
