@@ -72,6 +72,7 @@
     .prajudgement-trigger-card.has-data .pra-title { color: #15803d; }
     .pra-subtitle { font-size: 12px; color: #78350f; font-weight: 600; margin-top: 4px; }
 
+    #problemArea { transition: all 0.3s ease; }
     .section-locked { filter: blur(2px); opacity: 0.35 !important; pointer-events: none !important; }
     .btn-submit { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 15px; }
 
@@ -166,6 +167,8 @@
         <input type="text" id="colourInput" class="text-center-input" placeholder="Terisi Otomatis Sesuai VIN" readonly>
       </div>
 
+      <div id="historyLoading" style="display:none; text-align:center; font-size:13px; font-weight:700; color:#2b6cb0; background:#ebf8ff; border:1px dashed #90cdf4; border-radius:12px; padding:10px; margin-bottom:12px;">⏳ Memuat history problem...</div>
+
       <div class="summary-card-1" id="summaryCard1">
         <div class="title">📌 Summary 1: History Problem (After Inspection Out)</div>
         <div class="summary-item"><span class="summary-label">VIN:</span> <span id="sum1Vin">-</span></div>
@@ -180,6 +183,7 @@
         <div class="summary-item"><span class="summary-label">Problem After Inspection:</span> <span id="sum2After">-</span></div>
       </div>
 
+      <div id="problemArea" class="is-blurred">
       <div id="sectionInspect">
         <div class="form-group">
           <label>Problem Inspection*</label>
@@ -211,6 +215,7 @@
         <div class="pra-title">---⚠️PRAJUDGEMENT⚠️---</div>
         <div class="pra-subtitle" id="praStatusText">Klik di sini untuk upload bukti Problem yang membutuhkan Judgement APM</div>
       </div>
+      </div><!-- /problemArea -->
 
     </div>
 
@@ -288,7 +293,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyLbO560zfmEIoYeQxgfmkhj6FLvybcFhLEJmVsy3pTxpUysM-wSQVHOpAV80C-Wy8vIA/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWAHWoG-9tz6fsZtqqJY8vDDEqk3exny32EjKY3Gzf7txtB0ztBgZhzQM90naWfOZA6g/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -559,6 +564,12 @@
     sync();
   })();
 
+  // Pilihan problem tetap blur sampai VIN ditemukan, Car Model/Colour terisi, dan (di SIGN OFF) history selesai dimuat
+  function updateProblemAreaLock() {
+    const ready = !!(globalVinData && globalVinData.ready);
+    document.getElementById('problemArea').classList.toggle('is-blurred', !ready);
+  }
+
   function handleStationControl() {
     const stationElem = document.getElementById('stationSelect');
     const station = stationElem.value.toUpperCase();
@@ -625,6 +636,7 @@
       card1.style.display = 'none';
       card2.style.display = 'none';
     }
+    updateProblemAreaLock();
   }
 
   function autoPopulateSubSelections(probMap, sectionName) {
@@ -755,6 +767,8 @@
   function fetchMasterData(vin) {
     const isSignOff = document.getElementById('stationSelect').value.toUpperCase() === 'SIGN OFF';
     const submitBtn = document.getElementById('submitBtn');
+    globalVinData = null;      // scan baru: pilihan problem kembali blur
+    updateProblemAreaLock();
     if (isSignOff) {
       // Cegah submit sebelum history termuat (supaya tidak salah menandai DONE)
       submitBtn.disabled = true;
@@ -767,10 +781,11 @@
       document.getElementById('colourInput').value = "";
       document.getElementById('vinInput').value = "";
       restoreSubmitBtn();
+      updateProblemAreaLock();
     }
 
     function onFound(model, colour) {
-      globalVinData = { vin: vin, carModel: model, colour: colour, existingProblem: null };
+      globalVinData = { vin: vin, carModel: model, colour: colour, existingProblem: null, ready: !isSignOff };
       document.getElementById('carModelInput').value = model || '-';
       document.getElementById('colourInput').value = colour || '-';
       resetAllSelections();
@@ -808,18 +823,32 @@
 
   // History problem (hanya dibutuhkan di SIGN OFF), dimuat terpisah agar model/colour tampil cepat
   function loadHistory(vin) {
+    const t0 = Date.now();
+    const box = document.getElementById('historyLoading');
+    const debug = location.search.indexOf('debug') > -1;
+    box.textContent = '⏳ Memuat history problem...';
+    box.style.display = 'block';
+
     callApiRetry(`action=getHistory&vin=${encodeURIComponent(vin)}`, function(res) {
       if (!globalVinData || globalVinData.vin !== vin) return;
       globalVinData.existingProblem = res.existingProblem || null;
+      globalVinData.ready = true;
       handleStationControl();
       restoreSubmitBtn();
+      if (debug) {
+        box.textContent = '⏱ history ' + ((Date.now() - t0) / 1000).toFixed(1) + ' dtk (server ' + ((res.serverMs || 0) / 1000).toFixed(1) + ' dtk)';
+      } else {
+        box.style.display = 'none';
+      }
     }, function(why) {
+      box.style.display = 'none';
       document.getElementById('submitBtn').innerText = "History gagal dimuat - scan ulang VIN";
       alert("⚠️ Gagal memuat history problem. Scan ulang VIN.\n\nDetail: " + why);
     }, {
       tries: 3, timeout: 15000,
       onRetry: function(n) {
         document.getElementById('submitBtn').innerText = "Memuat history... (percobaan " + n + ")";
+        box.textContent = '⏳ Memuat history problem... (percobaan ' + n + ')';
       }
     });
   }
