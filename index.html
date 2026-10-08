@@ -155,6 +155,7 @@
       <div class="form-group">
         <label>VIN NO*</label>
         <button type="button" class="btn-scan" id="openScanBtn">📷 Live Scan Barcode</button>
+        <div style="text-align:center; font-size:12px; color:#64748b; font-weight:600; margin:-2px 0 8px;">💡 JIka pakai Scanner USB Cukup arahkan ke barcode VIN, terisi otomatis.</div>
         <input type="text" id="vinInput" class="text-center-input" placeholder="Hasil Scan VIN akan muncul di sini..." readonly required>
       </div>
 
@@ -249,13 +250,13 @@
     </div>
 
     <div class="evidence-box">
-      <div class="evidence-header">1. Foto Bukti Checksheet BIP*</div>
-      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('bip')">📷 Ambil Foto CheckSheet BIP</button>
+      <div class="evidence-header">1. Foto Evidence Problem / CheckSheet BIP/Final Inspection*</div>
+      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('bip')">📷 Ambil Foto</button>
       <img id="previewBip" class="img-preview" alt="Preview BIP">
     </div>
     <div class="evidence-box">
-      <div class="evidence-header">2. Foto Bukti CheckSheet Final Inspection*</div>
-      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('final')">📷 Ambil Foto Final Inspection</button>
+      <div class="evidence-header">2. Foto Evidence Problem / Checksheet BIP/Final Inspection*</div>
+      <button type="button" class="btn-cam-trigger" onclick="openFullscreenCam('final')">📷 Ambil Foto</button>
       <img id="previewFinal" class="img-preview" alt="Preview Final">
     </div>
     <div class="modal-actions">
@@ -293,7 +294,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWAHWoG-9tz6fsZtqqJY8vDDEqk3exny32EjKY3Gzf7txtB0ztBgZhzQM90naWfOZA6g/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw8G-qwv8JjKyjH298Y3rSUwVh3t72l9kprg7utGCFhOdOX0ZsbJu4IO46J8mVzKwyH7w/exec";
 
   const MASTER_SUB_CATEGORIES = {
     "Gap": ["Engine Hood", "Fender FRT LH", "Front Door LH", "Rear Door LH", "Tailgate", "Front Fender FRT RH", "Front Door RH", "Rear Door RH"],
@@ -895,6 +896,54 @@
     document.getElementById('scannerModal').style.display = 'none';
   }
   document.getElementById('closeScanBtn').addEventListener('click', stopQuagga);
+
+  // ---------- SCANNER BARCODE USB (alat scanner yang terhubung ke komputer) ----------
+  // Scanner USB umumnya bekerja seperti keyboard: mengetik VIN sangat cepat lalu menekan Enter.
+  // Kode di bawah menangkap ketikan cepat itu dan menjalankan alur yang sama dengan scan kamera.
+  (function initHardwareScanner() {
+    let buffer = '';
+    let lastTime = 0;
+    const MAX_GAP = 100; // ms antar karakter; manusia mengetik jauh lebih lambat dari scanner
+
+    function modalOpen() {
+      return ['subCategoryModal', 'praModal', 'fullscreenCamModal', 'successOverlay'].some(id => {
+        const el = document.getElementById(id);
+        return el && getComputedStyle(el).display !== 'none';
+      });
+    }
+
+    function handleScannedCode(raw) {
+      const code = raw.replace(/\s+/g, '').toUpperCase();
+      if (!document.getElementById('stationSelect').value) {
+        alert("⚠️ Pilih pos kerja Anda terlebih dahulu sebelum scan VIN.");
+        return;
+      }
+      if (isScanning) stopQuagga();
+      document.getElementById('vinInput').value = code;
+      fetchMasterData(code);
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (modalOpen()) { buffer = ''; return; }
+      const tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'textarea') return;
+
+      const now = Date.now();
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        if (buffer.length >= 5 && now - lastTime <= MAX_GAP * 3) {
+          e.preventDefault();
+          handleScannedCode(buffer);
+        }
+        buffer = '';
+        return;
+      }
+      if (e.key.length !== 1) return; // Shift, Backspace, dll diabaikan
+      if (now - lastTime > MAX_GAP) buffer = '';
+      buffer += e.key;
+      lastTime = now;
+    });
+  })();
 
   // ---------- SUBMIT ----------
   document.getElementById('problemForm').addEventListener('submit', function(e) {
